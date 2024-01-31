@@ -1,0 +1,3 @@
+[submodule "deps/ecp5-soc"]
+	path = deps/ecp5-soc
+	url = git@github.com:bboydt/ecp5-soc.git
