@@ -1,17 +1,21 @@
 Import("*")
 
+# Expected Imports:
+# - env
+# - ecp5_soc_dir
+# - neorv32_wrapper
+
 env.Append(
     VPATH = [
-        soc_base[0].dir
+        ecp5_soc_dir.Dir("rtl").srcnode(),
     ]
 )
 
 soc_ast = env.Command(
     "top.json",
-    ["top.v", soc_base],
-    "yosys $YOSYSFLAGS -p '"+
-    #f" read_json {soc_base[0]};" +
-    " read_verilog $VFLAGS $_VINCFLAGS $_VDEFFLAGS $SOURCE;" +
+    ["top.v", neorv32_wrapper],
+    "yosys $YOSYSFLAGS -p '" +
+    " read_verilog $VFLAGS $_VINCFLAGS $_VDEFFLAGS $SOURCES;" +
     " synth_ecp5 -top top -json $TARGET" +
     "'"
 )
