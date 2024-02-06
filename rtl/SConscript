@@ -1,0 +1,19 @@
+Import("*")
+
+env.Append(
+    VPATH = [
+        soc_base[0].dir
+    ]
+)
+
+soc_ast = env.Command(
+    "top.json",
+    ["top.v", soc_base],
+    "yosys $YOSYSFLAGS -p '"+
+    #f" read_json {soc_base[0]};" +
+    " read_verilog $VFLAGS $_VINCFLAGS $_VDEFFLAGS $SOURCE;" +
+    " synth_ecp5 -top top -json $TARGET" +
+    "'"
+)
+
+Return("soc_ast")
