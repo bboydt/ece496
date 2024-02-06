@@ -1,0 +1,176 @@
+# ButterStick r1.0 Constraints File
+# 
+#
+# Based on
+#   https://github.com/litex-hub/litex-boards/blob/master/litex_boards/platforms/gsd_butterstick.py
+#   https://github.com/butterstick-fpga/verilog-examples/blob/main/blink/ButterStick_r1.0.pcf
+#
+# For more information look at the butterstick schematic
+#   https://github.com/butterstick-fpga/butterstick-hardware
+#
+#
+# Use this file however you want.
+#
+# Boyd Thomas (Dec 29, 2023)
+
+# Clock
+LOCATE COMP "clk30" SITE "B12"; IOBUF PORT "clk30" IO_TYPE=LVCMOS18; FREQUENCY PORT "clk30" 30.0 MHz;
+
+# Reset
+LOCATE COMP "rst_n" SITE "R3"; IOBUF PORT "rst_n" IO_TYPE=LVCMOS33 OPENDRAIN=ON;
+
+# User Buttons
+LOCATE COMP "user_buttons[0]" SITE "U16"; IOBUF PORT "user_buttons[0]" IO_TYPE=SSTL135_I;
+LOCATE COMP "user_buttons[1]" SITE "T17"; IOBUF PORT "user_buttons[1]" IO_TYPE=SSTL135_I;
+
+# User Leds Enable
+LOCATE COMP "user_leds_en[0]" SITE "C13"; IOBUF PORT "user_leds_en[0]" IO_TYPE=LVCMOS33;
+LOCATE COMP "user_leds_en[1]" SITE "D12"; IOBUF PORT "user_leds_en[1]" IO_TYPE=LVCMOS33;
+LOCATE COMP "user_leds_en[2]" SITE "U2"; IOBUF PORT "user_leds_en[2]" IO_TYPE=LVCMOS33;
+LOCATE COMP "user_leds_en[3]" SITE "T3"; IOBUF PORT "user_leds_en[3]" IO_TYPE=LVCMOS33;
+LOCATE COMP "user_leds_en[4]" SITE "D13"; IOBUF PORT "user_leds_en[4]" IO_TYPE=LVCMOS33;
+LOCATE COMP "user_leds_en[5]" SITE "E13"; IOBUF PORT "user_leds_en[5]" IO_TYPE=LVCMOS33;
+LOCATE COMP "user_leds_en[6]" SITE "C16"; IOBUF PORT "user_leds_en[6]" IO_TYPE=LVCMOS33;
+
+# User Leds Color
+LOCATE COMP "user_leds_color[0]" SITE "T1"; IOBUF PORT "user_leds_color[0]" IO_TYPE=LVCMOS33;
+LOCATE COMP "user_leds_color[1]" SITE "R1"; IOBUF PORT "user_leds_color[1]" IO_TYPE=LVCMOS33;
+LOCATE COMP "user_leds_color[2]" SITE "U1"; IOBUF PORT "user_leds_color[2]" IO_TYPE=LVCMOS33;
+
+# VccIo Enable (enables all channels)
+LOCATE COMP "vccio_en" SITE "E12"; IOBUF PORT "vccio_en" IO_TYPE=LVCMOS33;
+
+# VccIo PDM
+LOCATE COMP "vccio_pdm[0]" SITE "V1"; IOBUF PORT "vccio_pdm[0]" IO_TYPE=LVCMOS33;
+LOCATE COMP "vccio_pdm[1]" SITE "E11"; IOBUF PORT "vccio_pdm[1]" IO_TYPE=LVCMOS33;
+LOCATE COMP "vccio_pdm[2]" SITE "T2"; IOBUF PORT "vccio_pdm[2]" IO_TYPE=LVCMOS33;
+
+# SYZYGY0 (Port A)
+#
+LOCATE COMP "syzygy0_s[0]" SITE "G2"; IOBUF PORT "syzygy0_s[0]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[1]" SITE "J3"; IOBUF PORT "syzygy0_s[1]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[2]" SITE "F1"; IOBUF PORT "syzygy0_s[2]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[3]" SITE "K3"; IOBUF PORT "syzygy0_s[3]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[4]" SITE "J4"; IOBUF PORT "syzygy0_s[4]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[5]" SITE "K2"; IOBUF PORT "syzygy0_s[5]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[6]" SITE "J5"; IOBUF PORT "syzygy0_s[6]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[7]" SITE "J1"; IOBUF PORT "syzygy0_s[7]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[8]" SITE "N2"; IOBUF PORT "syzygy0_s[8]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[9]" SITE "L3"; IOBUF PORT "syzygy0_s[9]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[10]" SITE "M1"; IOBUF PORT "syzygy0_s[10]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[11]" SITE "L2"; IOBUF PORT "syzygy0_s[11]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[12]" SITE "N3"; IOBUF PORT "syzygy0_s[12]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[13]" SITE "N4"; IOBUF PORT "syzygy0_s[13]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[14]" SITE "M3"; IOBUF PORT "syzygy0_s[14]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[15]" SITE "P5"; IOBUF PORT "syzygy0_s[15]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[16]" SITE "H1"; IOBUF PORT "syzygy0_s[16]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[17]" SITE "K5"; IOBUF PORT "syzygy0_s[17]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[18]" SITE "K4"; IOBUF PORT "syzygy0_s[18]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[19]" SITE "K1"; IOBUF PORT "syzygy0_s[19]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[20]" SITE "L4"; IOBUF PORT "syzygy0_s[20]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[21]" SITE "L1"; IOBUF PORT "syzygy0_s[21]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[22]" SITE "L5"; IOBUF PORT "syzygy0_s[22]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[23]" SITE "M4"; IOBUF PORT "syzygy0_s[23]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[24]" SITE "N1"; IOBUF PORT "syzygy0_s[24]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[25]" SITE "N5"; IOBUF PORT "syzygy0_s[25]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[26]" SITE "P3"; IOBUF PORT "syzygy0_s[26]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[27]" SITE "P4"; IOBUF PORT "syzygy0_s[27]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[28]" SITE "H2"; IOBUF PORT "syzygy0_s[28]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[29]" SITE "P1"; IOBUF PORT "syzygy0_s[29]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[30]" SITE "G1"; IOBUF PORT "syzygy0_s[30]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy0_s[31]" SITE "P2"; IOBUF PORT "syzygy0_s[31]" IO_TYPE=LVCMOS33;
+
+# Not sure about these
+#LOCATE COMP "syzygy0_p2c_clk_p" SITE "H2"; IOBUF PORT "syzygy0_p2c_clk_p" IO_TYPE=LVCMOS33;
+#LOCATE COMP "syzygy0_c2p_clk_p" SITE "P1"; IOBUF PORT "syzygy0_c2p_clk_p" IO_TYPE=LVCMOS33;
+#LOCATE COMP "syzygy0_p2c_clk_n" SITE "G1"; IOBUF PORT "syzygy0_p2c_clk_n" IO_TYPE=LVCMOS33; 
+#LOCATE COMP "syzygy0_c2p_clk_n" SITE "P2"; IOBUF PORT "syzygy0_c2p_clk_n" IO_TYPE=LVCMOS33;
+
+# SYZYGY1 (Port B)
+#
+LOCATE COMP "syzygy1_s[0]" SITE "E4"; IOBUF PORT "syzygy1_s[0]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[1]" SITE "A4"; IOBUF PORT "syzygy1_s[1]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[2]" SITE "D5"; IOBUF PORT "syzygy1_s[2]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[3]" SITE "A5"; IOBUF PORT "syzygy1_s[3]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[4]" SITE "C4"; IOBUF PORT "syzygy1_s[4]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[5]" SITE "B2"; IOBUF PORT "syzygy1_s[5]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[6]" SITE "B4"; IOBUF PORT "syzygy1_s[6]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[7]" SITE "C2"; IOBUF PORT "syzygy1_s[7]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[8]" SITE "A2"; IOBUF PORT "syzygy1_s[8]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[9]" SITE "C1"; IOBUF PORT "syzygy1_s[9]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[10]" SITE "B1"; IOBUF PORT "syzygy1_s[10]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[11]" SITE "D1"; IOBUF PORT "syzygy1_s[11]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[12]" SITE "F4"; IOBUF PORT "syzygy1_s[12]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[13]" SITE "D2"; IOBUF PORT "syzygy1_s[13]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[14]" SITE "E3"; IOBUF PORT "syzygy1_s[14]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[15]" SITE "E1"; IOBUF PORT "syzygy1_s[15]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[16]" SITE "B5"; IOBUF PORT "syzygy1_s[16]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[17]" SITE "E5"; IOBUF PORT "syzygy1_s[17]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[18]" SITE "F5"; IOBUF PORT "syzygy1_s[18]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[19]" SITE "C5"; IOBUF PORT "syzygy1_s[19]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[20]" SITE "B3"; IOBUF PORT "syzygy1_s[20]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[21]" SITE "A3"; IOBUF PORT "syzygy1_s[21]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[22]" SITE "D3"; IOBUF PORT "syzygy1_s[22]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[23]" SITE "C3"; IOBUF PORT "syzygy1_s[23]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[24]" SITE "H5"; IOBUF PORT "syzygy1_s[24]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[25]" SITE "G5"; IOBUF PORT "syzygy1_s[25]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[26]" SITE "H3"; IOBUF PORT "syzygy1_s[26]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[27]" SITE "H4"; IOBUF PORT "syzygy1_s[27]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[28]" SITE "G3"; IOBUF PORT "syzygy1_s[28]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[29]" SITE "F2"; IOBUF PORT "syzygy1_s[29]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy1_s[30]" SITE "F3"; IOBUF PORT "syzygy1_s[30]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy1_s[31]" SITE "E2"; IOBUF PORT "syzygy1_s[31]" IO_TYPE=LVCMOS33;
+
+# Not sure about these
+#LOCATE COMP "syzygy1_p2c_clk_p" SITE "F2"; IOBUF PORT "syzygy1_p2c_clk_p" IO_TYPE=LVCMOS33;
+#LOCATE COMP "syzygy1_c2p_clk_p" SITE "G3"; IOBUF PORT "syzygy1_c2p_clk_p" IO_TYPE=LVCMOS33;
+#LOCATE COMP "syzygy1_p2c_clk_n" SITE "E2"; IOBUF PORT "syzygy1_p2c_clk_n" IO_TYPE=LVCMOS33; 
+#LOCATE COMP "syzygy1_c2p_clk_n" SITE "F3"; IOBUF PORT "syzygy1_c2p_clk_n" IO_TYPE=LVCMOS33;
+
+# SYZYGY2 (Port C)
+#
+LOCATE COMP "syzygy2_s[0]" SITE "C11"; IOBUF PORT "syzygy2_s[0]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_s[1]" SITE "B11"; IOBUF PORT "syzygy2_s[1]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy2_s[2]" SITE "D6"; IOBUF PORT "syzygy2_s[2]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_s[3]" SITE "D7"; IOBUF PORT "syzygy2_s[3]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy2_s[4]" SITE "E6"; IOBUF PORT "syzygy2_s[4]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_s[5]" SITE "E7"; IOBUF PORT "syzygy2_s[5]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy2_s[6]" SITE "D8"; IOBUF PORT "syzygy2_s[6]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_s[7]" SITE "E8"; IOBUF PORT "syzygy2_s[7]" IO_TYPE=LVCMOS33; 
+LOCATE COMP "syzygy2_s[8]" SITE "E10"; IOBUF PORT "syzygy2_s[8]" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_s[9]" SITE "D10"; IOBUF PORT "syzygy2_s[9]" IO_TYPE=LVCMOS33; 
+
+# Not sure about these
+#LOCATE COMP "syzygy2_p2c_clk_p" SITE "A10"; IOBUF PORT "syzygy2_p2c_clk_p" IO_TYPE=LVCMOS33;
+#LOCATE COMP "syzygy2_c2p_clk_p" SITE "A9"; IOBUF PORT "syzygy2_c2p_clk_p" IO_TYPE=LVCMOS33;
+#LOCATE COMP "syzygy2_p2c_clk_n" SITE "A11"; IOBUF PORT "syzygy2_p2c_clk_n" IO_TYPE=LVCMOS33; 
+#LOCATE COMP "syzygy2_c2p_clk_n" SITE "B10"; IOBUF PORT "syzygy2_c2p_clk_n" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "syzygy2_rx0_p" SITE "Y5"; IOBUF PORT "syzygy2_rx0_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_rx0_n" SITE "Y6"; IOBUF PORT "syzygy2_rx0_n" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "syzygy2_rx1_p" SITE "Y7"; IOBUF PORT "syzygy2_rx1_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_rx1_n" SITE "Y8"; IOBUF PORT "syzygy2_rx1_n" IO_TYPE=LVCMOS33; 
+
+LOCATE COMP "syzygy2_rx2_p" SITE "Y14"; IOBUF PORT "syzygy2_rx2_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_rx2_n" SITE "Y15"; IOBUF PORT "syzygy2_rx2_n" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "syzygy2_rx3_p" SITE "Y16"; IOBUF PORT "syzygy2_rx3_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_rx3_n" SITE "Y17"; IOBUF PORT "syzygy2_rx3_n" IO_TYPE=LVCMOS33; 
+
+LOCATE COMP "syzygy2_tx0_p" SITE "W4"; IOBUF PORT "syzygy2_tx0_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_tx0_n" SITE "W5"; IOBUF PORT "syzygy2_tx0_n" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "syzygy2_tx1_p" SITE "W8"; IOBUF PORT "syzygy2_tx1_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_tx1_n" SITE "W9"; IOBUF PORT "syzygy2_tx1_n" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "syzygy2_tx2_p" SITE "W13"; IOBUF PORT "syzygy2_tx2_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_tx2_n" SITE "W14"; IOBUF PORT "syzygy2_tx2_n" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "syzygy2_tx3_p" SITE "W17"; IOBUF PORT "syzygy2_tx3_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "syzygy2_tx3_n" SITE "W18"; IOBUF PORT "syzygy2_tx3_n" IO_TYPE=LVCMOS33;
+
+# Not sure about these
+#LOCATE COMP "syzygy2_refclk0_p" SITE "Y11"; IOBUF PORT "syzygy2_refclk0_p" IO_TYPE=LVCMOS33;
+#LOCATE COMP "syzygy2_refclk0_n" SITE "Y12"; IOBUF PORT "syzygy2_refclk0_n" IO_TYPE=LVCMOS33; 
+
