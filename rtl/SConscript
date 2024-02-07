@@ -4,6 +4,16 @@ Import("*")
 # - env
 # - ecp5_soc_dir
 # - neorv32_wrapper
+# - memory_config: a dictionary with all memory origins and lengths
+
+
+# Load memory config
+#
+
+import json
+
+# Synthesize Design
+#
 
 env.Append(
     VPATH = [
@@ -14,10 +24,45 @@ env.Append(
 soc_ast = env.Command(
     "top.json",
     ["top.v", neorv32_wrapper],
-    "yosys $YOSYSFLAGS -p '" +
+    "yosys $YOSYSFLAGS -p \"" +
     " read_verilog $VFLAGS $_VINCFLAGS $_VDEFFLAGS $SOURCES;" +
     " synth_ecp5 -top top -json $TARGET" +
-    "'"
+    "\""
 )
+
+
+# Memory Config
+#
+
+memory_json = env.File("memory.json")
+# loads the memory json file and emits verilog macros for the address and origin of each memory region
+env.Depends(soc_ast, memory_json)
+
+memory_config = json.loads(memory_json.get_text_contents())
+defines = {}
+for addr_range in memory_config:
+    
+    name = addr_range["name"]
+    origin = int(addr_range["origin"], 0)
+    length = int(addr_range["length"], 0)
+    mask = length - 1
+    init = addr_range.get("init", False)
+    width = addr_range.get("width", 32)
+
+    defines[f"{name}_ADDR"] = f"\'h{origin:x}"
+    defines[f"{name}_LENGTH"] = f"'h{length:x}"
+    defines[f"{name}_MASK"] = f"'h{mask:x}"
+    
+    # if the memory region is initialized create a bram init file
+    if (init):
+        init_file = env.Command(f"{name}.init", [], f"ecpbram -g $TARGET -w {width} -d {length/width:0.0f}")
+        env.Depends(soc_ast, init_file)
+
+        defines[f"{name}_INIT_FILE"] = f"\\\"{str(init_file[0].abspath)}\\\""
+
+
+env.Append(VDEFINES = defines)
+print("Memory Defines:")
+print(defines)
 
 Return("soc_ast")

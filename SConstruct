@@ -1,7 +1,8 @@
 import os
+import json
 
 yosys_flags = [
-    "-q",
+        #"-q",
 ]
 
 nextpnr_flags = [ 
@@ -66,7 +67,7 @@ top_ast = SConscript(
     exports = {
         "env": env,
         "ecp5_soc_dir": ecp5_soc_dir,
-        "neorv32_wrapper": neorv32_wrapper
+        "neorv32_wrapper": neorv32_wrapper,
     }
 )
 

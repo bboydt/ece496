@@ -1,0 +1,14 @@
+[
+    {
+        "name": "ROM0",
+        "origin": "0x00000000",
+        "length": "16384",
+        "init": true
+    },
+    {
+        "name": "RAM0",
+        "origin": "0x00004000",
+        "length": "16384",
+        "init": false
+    }
+]
