@@ -1,0 +1,7 @@
+Import("*")
+
+sources = neorv32_dir.glob("sw/lib/source/*.c")
+libneorv32 = env.StaticLibrary("libneorv32.a", sources)
+
+Return("libneorv32")
+

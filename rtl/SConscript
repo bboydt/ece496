@@ -21,7 +21,7 @@ env.Append(
     ]
 )
 
-soc_ast = env.Command(
+top_ast = env.Command(
     "top.json",
     ["top.v", neorv32_wrapper],
     "yosys $YOSYSFLAGS -p \"" +
@@ -34,9 +34,11 @@ soc_ast = env.Command(
 # Memory Config
 #
 
+init_files = {}
+
 memory_json = env.File("memory.json")
 # loads the memory json file and emits verilog macros for the address and origin of each memory region
-env.Depends(soc_ast, memory_json)
+env.Depends(top_ast, memory_json)
 
 memory_config = json.loads(memory_json.get_text_contents())
 defines = {}
@@ -56,8 +58,9 @@ for addr_range in memory_config:
     # if the memory region is initialized create a bram init file
     if (init):
         init_file = env.Command(f"{name}.init", [], f"ecpbram -g $TARGET -w {width} -d {length/width:0.0f}")
-        env.Depends(soc_ast, init_file)
-
+        env.Depends(top_ast, init_file)
+        
+        init_files[name] = init_file
         defines[f"{name}_INIT_FILE"] = f"\\\"{str(init_file[0].abspath)}\\\""
 
 
@@ -65,4 +68,10 @@ env.Append(VDEFINES = defines)
 print("Memory Defines:")
 print(defines)
 
-Return("soc_ast")
+
+top = {
+    "ast": top_ast,
+    "init_files": init_files
+}
+
+Return("top")
