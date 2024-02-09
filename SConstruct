@@ -196,9 +196,9 @@ boot_env = fw_env.Clone(
     LIBS = [libstart, libneorv32]
 )
 
-blinky = SConscript(
-    firmware_dir.File("blinky/SConscript"),
-    variant_dir = "build/firmware/blinky",
+uart = SConscript(
+    firmware_dir.File("uart/SConscript"),
+    variant_dir = "build/firmware/uart",
     duplicate = False,
     exports = {
         "env": boot_env
@@ -210,11 +210,11 @@ blinky = SConscript(
 # Bitstreams
 #
 
-blinky_textcfg = env.Command(
-    "build/blinky.config",
-    [top_textcfg, top_rom_init, blinky],
+uart_textcfg = env.Command(
+    "build/uart.config",
+    [top_textcfg, top_rom_init, uart],
     "ecpbram -i ${SOURCES[0]} -o $TARGET -f ${SOURCES[1]} -t ${SOURCES[2]}"
 )
 
-blinky_bitstream = gw_env.Ecp5Bitstream(blinky_textcfg)
+uart_bitstream = gw_env.Ecp5Bitstream(uart_textcfg)
 

@@ -42,7 +42,7 @@ module top (
     reg sys_rst;
 
     always @(*) begin
-        sys_clk = en;
+        sys_clk = clk30;
         sys_rst = ~user_buttons[1];
     end
 
@@ -141,7 +141,7 @@ module top (
     always @(posedge clk30) begin
         counter <= counter + 1;
 
-        if (counter >= 1500000) begin
+        if (counter >= 150000) begin
             counter <= 0;
             en <= ~en;
         end
