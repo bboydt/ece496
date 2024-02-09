@@ -3,6 +3,7 @@
 `include "ecp5_soc/cores/rom.v"
 `include "ecp5_soc/cores/bram.v"
 
+`include "cores/leds.v"
 
 `define WISHBONE_CONNECT(MASTER_PREFIX, SLAVE_PREFIX) \
     SLAVE_PREFIX``_cyc <= MASTER_PREFIX``_cyc; \
@@ -33,8 +34,8 @@
 module top (
     input clk30,
     input [1:0] user_buttons,
-    output reg [2:0] user_leds_color,
-    output reg [6:0] user_leds_en,
+    output [2:0] user_leds_color,
+    output [6:0] user_leds_en,
     inout reg [31:0] syzygy0_s
 );
  
@@ -45,7 +46,6 @@ module top (
         sys_clk = clk30;
         sys_rst = ~user_buttons[1];
     end
-
 
 
     // ROM0
@@ -62,6 +62,7 @@ module top (
         `WISHBONE_PORT(wb, rom0)
     );
     
+
     // RAM0
     //
 
@@ -73,6 +74,31 @@ module top (
         .sys_clk(sys_clk),
         .sys_rst(sys_rst),
         `WISHBONE_PORT(wb, ram0)
+    );
+
+
+    // LED0
+    //
+
+    reg pwm_clk;
+    reg [31:0] pwm_cnt;
+    always @(posedge clk30) begin
+        if (pwm_cnt > 50000) begin
+            pwm_clk <= ~pwm_clk;
+            pwm_cnt <= 0;
+        end else begin
+            pwm_cnt <= pwm_cnt + 1;
+        end
+    end
+
+    `WISHBONE_REGS(led0);
+    led_controller led0 (
+        .sys_clk(sys_clk),
+        .sys_rst(sys_rst),
+        `WISHBONE_PORT(wb, led0),
+        .pwm_clk(pwm_clk),
+        .leds_color(user_leds_color),
+        .leds_en(user_leds_en)
     );
 
 
@@ -89,8 +115,8 @@ module top (
         .gpio_out(gpio),
         `WISHBONE_PORT(bus, cpu0)
     );
-
     
+
     // Interconnect
     //
     
@@ -126,26 +152,5 @@ module top (
         .slaves_err ({rom0_err , ram0_err }),
     );
 
-    // Leds
-    //
-
-    reg en;
-    reg [2:0] color;
-    reg [32:0] counter;
-
-    always @(*) begin
-        user_leds_en = {en, rom0_ack, rom0_err, ram0_ack, ram0_err, 1'b0, gpio[0]};
-        user_leds_color = 3'b110;
-    end
-
-    always @(posedge clk30) begin
-        counter <= counter + 1;
-
-        if (counter >= 150000) begin
-            counter <= 0;
-            en <= ~en;
-        end
-    end
-    
 endmodule
 
