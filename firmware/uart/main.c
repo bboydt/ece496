@@ -1,6 +1,6 @@
 #include <neorv32.h>
 
-#define BAUD_RATE 19200
+#define BAUD_RATE 115200
 
 void isr(void)
 {
@@ -18,10 +18,10 @@ int main(void)
     neorv32_uart0_puts("| |_|   ||       |  |   |    |   |  |   |___ |   |  | | _____| |  |   |  |   | |     |_ |    _  | __ \n"); 
     neorv32_uart0_puts("|_______||_______|  |___|    |___|  |_______||___|  |_||_______|  |___|  |___| |_______||___| |_||__|\n");
     neorv32_uart0_puts("\n");
-    neorv32_uart0_puts("Howdy sailor!\n");
+    neorv32_uart0_puts("Howdy sailor!!\n");
+    neorv32_uart0_puts("\n");
 
     while (1)
     {
-        neorv32_gpio_pin_toggle(0);
     }
 }

@@ -4,6 +4,7 @@
 `include "ecp5_soc/cores/bram.v"
 
 `include "cores/leds.v"
+`include "cores/vccio.v"
 
 `define WISHBONE_CONNECT(MASTER_PREFIX, SLAVE_PREFIX) \
     SLAVE_PREFIX``_cyc <= MASTER_PREFIX``_cyc; \
@@ -36,6 +37,8 @@ module top (
     input [1:0] user_buttons,
     output [2:0] user_leds_color,
     output [6:0] user_leds_en,
+    output vccio_en,
+    output [2:0] vccio_pdm,
     inout reg [31:0] syzygy0_s
 );
  
@@ -51,7 +54,7 @@ module top (
     // ROM0
     //
 
-    `WISHBONE_REGS(rom0);
+    `WISHBONE_WIRES(rom0);
     rom #(
         .ADDR_WIDTH(32),
         .LENGTH(`ROM0_LENGTH),
@@ -66,7 +69,7 @@ module top (
     // RAM0
     //
 
-    `WISHBONE_REGS(ram0);
+    `WISHBONE_WIRES(ram0);
     bram #(
         .ADDR_WIDTH(32),
         .LENGTH(`RAM0_LENGTH)
@@ -91,7 +94,7 @@ module top (
         end
     end
 
-    `WISHBONE_REGS(led0);
+    `WISHBONE_WIRES(led0);
     led_controller led0 (
         .sys_clk(sys_clk),
         .sys_rst(sys_rst),
@@ -102,11 +105,29 @@ module top (
     );
 
 
+    // VCCIO0
+    //
+    
+    `WISHBONE_WIRES(vccio0);
+    vccio_controller #(
+        .CHANNEL_COUNT(3),
+        .LEVEL_WIDTH(16)
+    ) vccio0 (
+        .sys_clk(sys_clk),
+        .sys_rst(sys_rst),
+        `WISHBONE_PORT(wb, vccio0),
+
+        .clk30(clk30),
+        .vccio_en(vccio_en),
+        .vccio_pdm(vccio_pdm)
+    );
+
+
     // CPU0
     //
 
     reg [63:0] gpio;
-    `WISHBONE_REGS(cpu0);
+    `WISHBONE_WIRES(cpu0);
     neorv32_wrapper cpu0 (
         .sys_clk(sys_clk),
         .sys_rst_n(~sys_rst),
