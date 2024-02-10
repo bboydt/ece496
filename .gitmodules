@@ -4,3 +4,6 @@
 [submodule "deps/scons-fpga"]
 	path = deps/scons-fpga
 	url = https://github.com/bboydt/scons-fpga.git
+[submodule "deps/syzygy"]
+	path = deps/syzygy
+	url = https://github.com/SYZYGYfpga/pcb-templates.git
