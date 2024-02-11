@@ -62,13 +62,13 @@ module led_controller #(
 
     initial begin
         led_values = {
-            24'hff0000,
-            24'h00ff00,
-            24'h0000ff,
-            24'hff00ff,
-            24'hffff00,
-            24'h00ffff,
-            24'hffffff
+            24'h00FF00,
+            24'h00D800,
+            24'h00B400,
+            24'h009000,
+            24'h006C00,
+            24'h004800,
+            24'h002400
         };
     end
 

@@ -8,15 +8,17 @@ void isr(void)
 
 int main(void)
 {
+
     neorv32_uart0_setup(BAUD_RATE, 0);
     neorv32_uart0_puts("\n");
-    neorv32_uart0_puts(" _______  __   __  _______  _______  _______  ______    _______  _______  ___   _______  ___   _  __ \n"); 
-    neorv32_uart0_puts("|  _    ||  | |  ||       ||       ||       ||    _ |  |       ||       ||   | |       ||   | | ||  |\n"); 
-    neorv32_uart0_puts("| |_|   ||  | |  ||_     _||_     _||    ___||   | ||  |  _____||_     _||   | |       ||   |_| ||  |\n"); 
-    neorv32_uart0_puts("|       ||  |_|  |  |   |    |   |  |   |___ |   |_||_ | |_____   |   |  |   | |       ||      _||  |\n"); 
-    neorv32_uart0_puts("|  _   | |       |  |   |    |   |  |    ___||    __  ||_____  |  |   |  |   | |      _||     |_ |__|\n"); 
-    neorv32_uart0_puts("| |_|   ||       |  |   |    |   |  |   |___ |   |  | | _____| |  |   |  |   | |     |_ |    _  | __ \n"); 
-    neorv32_uart0_puts("|_______||_______|  |___|    |___|  |_______||___|  |_||_______|  |___|  |___| |_______||___| |_||__|\n");
+    neorv32_uart0_puts("           __..-''\"'\"'-=.+\n");
+    neorv32_uart0_puts("     __..''      __.-' R |\n");
+    neorv32_uart0_puts("    [---......+'' ./  E  |\n");
+    neorv32_uart0_puts("    |\\       /| ./  T  ./|\n");
+    neorv32_uart0_puts("    | \\     /'|/   T ./  ]\n");
+    neorv32_uart0_puts("    | /'---'\\ |  U  / ..''\n");
+    neorv32_uart0_puts("    [/       \\| B ./-'    \n");
+    neorv32_uart0_puts("    \"\"....____V_.'\"       \n");
     neorv32_uart0_puts("\n");
     neorv32_uart0_puts("Howdy sailor!!\n");
     neorv32_uart0_puts("\n");
