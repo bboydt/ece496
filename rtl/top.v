@@ -39,9 +39,11 @@ module top (
     output [6:0] user_leds_en,
     output vccio_en,
     output [2:0] vccio_pdm,
+    output spiflash_cs_n,
+    output spiflash_mosi,
+    input  spiflash_miso,
     inout reg [31:0] syzygy0_s
 );
- 
     reg sys_clk;
     reg sys_rst;
 
@@ -50,6 +52,12 @@ module top (
         sys_rst = ~user_buttons[1];
     end
 
+
+    // SPIFLASH
+    //
+
+    wire spiflash_clk;
+    USRMCLK usrmclk(.USRMCLKI(spiflash_clk), .USRMCLKTS(0));
 
     // ROM0
     //
@@ -134,6 +142,10 @@ module top (
         .uart0_rx(syzygy0_s[0]),
         .uart0_tx(syzygy0_s[1]),
         .gpio_out(gpio),
+        .xip_csn(spiflash_cs_n),
+        .xip_clk(spiflash_clk),
+        .xip_mosi(spiflash_mosi),
+        .xip_miso(spiflash_miso),
         `WISHBONE_PORT(bus, cpu0)
     );
     

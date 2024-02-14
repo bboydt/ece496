@@ -135,7 +135,7 @@ fw_env.Append(
 # Neorv32 is written in VHDL so we need to build a verilog version of it
 
 # In the future we might want to customize the processor, but for now just use ecp5-soc's wrapper.
-neorv32_wrapper_src = ecp5_soc_dir.File("rtl/ecp5_soc/cores/neorv32.vhdl")
+neorv32_wrapper_src = File("rtl/neorv32.vhd")
 neorv32_wrapper = SConscript(
     ecp5_soc_dir.File("deps/SConscript-neorv32"),
     variant_dir = "build/neorv32",
