@@ -1,0 +1,27 @@
+Import("*")
+
+linker_scripts = [
+    fw_shared_dir.File("ld/memory.ld"),
+    fw_shared_dir.File("ld/sections_bootrom.ld")
+]
+linker_flags = env.CreateLinkerFlags(linker_scripts)
+this_env = env.Clone()
+this_env.Append(LINKFLAGS = linker_flags)
+
+bootrom_elf = this_env.Program("bootrom.elf", ["start.S"])
+
+bootrom_bin = this_env.Command(
+    "bootrom.bin",
+    [bootrom_elf],
+    "$OBJCOPY -I elf32-little $SOURCE -O binary $TARGET",
+    cmdstr = "objcopy $TARGET"
+)
+
+bootrom_init = this_env.Command(
+    "bootrom.init",
+    [bootrom_bin],
+    "xxd -ps -c 4 $SOURCE > $TARGET"
+)
+
+Return("bootrom_init")
+

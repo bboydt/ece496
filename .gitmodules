@@ -7,3 +7,6 @@
 [submodule "deps/syzygy"]
 	path = deps/syzygy
 	url = https://github.com/SYZYGYfpga/pcb-templates.git
+[submodule "deps/neorv32"]
+	path = deps/neorv32
+	url = https://github.com/stnolting/neorv32.git

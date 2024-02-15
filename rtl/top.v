@@ -39,9 +39,11 @@ module top (
     output [6:0] user_leds_en,
     output vccio_en,
     output [2:0] vccio_pdm,
+    output spiflash_cs_n,
+    output spiflash_mosi,
+    input  spiflash_miso,
     inout reg [31:0] syzygy0_s
 );
- 
     reg sys_clk;
     reg sys_rst;
 
@@ -50,6 +52,12 @@ module top (
         sys_rst = ~user_buttons[1];
     end
 
+
+    // SPIFLASH
+    //
+
+    wire spiflash_clk;
+    USRMCLK usrmclk(.USRMCLKI(spiflash_clk), .USRMCLKTS(0));
 
     // ROM0
     //
@@ -83,26 +91,28 @@ module top (
     // LED0
     //
 
-    reg pwm_clk;
-    reg [31:0] pwm_cnt;
-    always @(posedge clk30) begin
-        if (pwm_cnt > 50000) begin
-            pwm_clk <= ~pwm_clk;
-            pwm_cnt <= 0;
-        end else begin
-            pwm_cnt <= pwm_cnt + 1;
-        end
-    end
-
-    `WISHBONE_WIRES(led0);
-    led_controller led0 (
-        .sys_clk(sys_clk),
-        .sys_rst(sys_rst),
-        `WISHBONE_PORT(wb, led0),
-        .pwm_clk(pwm_clk),
-        .leds_color(user_leds_color),
-        .leds_en(user_leds_en)
-    );
+    assign user_leds_color = 3'b100;
+    assign user_leds_en = {1'b1, rom0_ack, rom0_err, ram0_ack, ram0_err, 1'b0, gpio_out[0]};
+//    reg pwm_clk;
+//    reg [31:0] pwm_cnt;
+//    always @(posedge clk30) begin
+//        if (pwm_cnt > 50000) begin
+//            pwm_clk <= ~pwm_clk;
+//            pwm_cnt <= 0;
+//        end else begin
+//            pwm_cnt <= pwm_cnt + 1;
+//        end
+//    end
+//
+//    `WISHBONE_WIRES(led0);
+//    led_controller led0 (
+//        .sys_clk(sys_clk),
+//        .sys_rst(sys_rst),
+//        `WISHBONE_PORT(wb, led0),
+//        .pwm_clk(pwm_clk),
+//        .leds_color(user_leds_color),
+//        .leds_en(user_leds_en)
+//    );
 
 
     // VCCIO0
@@ -134,6 +144,10 @@ module top (
         .uart0_rx(syzygy0_s[0]),
         .uart0_tx(syzygy0_s[1]),
         .gpio_out(gpio),
+        .xip_csn(spiflash_cs_n),
+        .xip_clk(spiflash_clk),
+        .xip_mosi(spiflash_mosi),
+        .xip_miso(spiflash_miso),
         `WISHBONE_PORT(bus, cpu0)
     );
     

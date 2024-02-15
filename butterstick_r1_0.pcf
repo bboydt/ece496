@@ -45,6 +45,13 @@ LOCATE COMP "vccio_pdm[0]" SITE "V1"; IOBUF PORT "vccio_pdm[0]" IO_TYPE=LVCMOS33
 LOCATE COMP "vccio_pdm[1]" SITE "E11"; IOBUF PORT "vccio_pdm[1]" IO_TYPE=LVCMOS33;
 LOCATE COMP "vccio_pdm[2]" SITE "T2"; IOBUF PORT "vccio_pdm[2]" IO_TYPE=LVCMOS33;
 
+# SPI Flash
+LOCATE COMP "spiflash_cs_n" SITE "R2"; IOBUF PORT "spiflash_cs_n" IO_TYPE=LVCMOS33;
+LOCATE COMP "spiflash_mosi" SITE "W2"; IOBUF PORT "spiflash_mosi" IO_TYPE=LVCMOS33;
+LOCATE COMP "spiflash_miso" SITE "V2"; IOBUF PORT "spiflash_miso" IO_TYPE=LVCMOS33;
+LOCATE COMP "spiflash_wp"   SITE "Y2"; IOBUF PORT "spiflash_wp"   IO_TYPE=LVCMOS33;
+LOCATE COMP "spiflash_hold" SITE "W1"; IOBUF PORT "spiflash_hold" IO_TYPE=LVCMOS33;
+
 # SYZYGY0 (Port A)
 #
 LOCATE COMP "syzygy0_s[0]" SITE "G2"; IOBUF PORT "syzygy0_s[0]" IO_TYPE=LVCMOS33;

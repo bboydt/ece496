@@ -106,7 +106,7 @@ fw_env = env.Clone(
     CXXCOMSTR    = "c++ $TARGET",
     ASCOMSTR     = "as $TARGET",
     ASPPCOMSTR   = "as $TARGET",
-    LINKCOMSTR   = "ld $TARGET",
+    #LINKCOMSTR   = "ld $TARGET",
     ARCOMSTR     = "ar $TARGET",
     RANLIBCOMSTR = "ranlib $TARGET",
 )
@@ -115,18 +115,21 @@ env.Append(
     CPPSUFFIXES = [".s"]
 )
 
-ld_scripts = [File("firmware/shared/memory.ld"), File("firmware/shared/sections_boot.ld")]
-ld_script_flags = [f"-Wl,-T,{f.path}" for f in ld_scripts]
+# Creates linker flags for linker scripts
+def create_linker_flags(self, scripts):
+    flags = [f"-Wl,-T,{f.path}" for f in scripts]
+    print(flags)
+    return flags
 
+fw_env.AddMethod(create_linker_flags, "CreateLinkerFlags")
+
+# Adds map file as a target
 def ld_emitter(target, source, env):
     map_file = os.path.splitext(str(target[0]))[0] + ".map"
-    Depends(target, ld_scripts)
+    #Depends(target, ld_scripts)
     return target + [map_file], source
 
-fw_env.Append(
-    LINKFLAGS = ld_script_flags,
-    PROGEMITTER = ld_emitter
-)
+fw_env.Append(PROGEMITTER = ld_emitter)
 
 
 
@@ -135,10 +138,10 @@ fw_env.Append(
 # Neorv32 is written in VHDL so we need to build a verilog version of it
 
 # In the future we might want to customize the processor, but for now just use ecp5-soc's wrapper.
-neorv32_wrapper_src = ecp5_soc_dir.File("rtl/ecp5_soc/cores/neorv32.vhdl")
+neorv32_wrapper_src = File("rtl/neorv32.vhd")
 neorv32_wrapper = SConscript(
     ecp5_soc_dir.File("deps/SConscript-neorv32"),
-    variant_dir = "build/neorv32",
+    variant_dir = "build/gateware/neorv32",
     duplicate = False,
     exports = {
         "env": gw_env,
@@ -154,7 +157,7 @@ neorv32_wrapper = SConscript(
 
 top = SConscript(
     dirs = "rtl",
-    variant_dir = "build/rtl",
+    variant_dir = "build/gateware/top",
     duplicate = False,
     exports = {
         "env": gw_env,
@@ -173,14 +176,15 @@ top_textcfg = gw_env.Ecp5Pnr(top_ast)
 # Firmware Libraries
 #
 
-libstart = SConscript(
-    firmware_dir.File("start/SConscript"),
-    variant_dir = "build/firmware/start",
-    duplicate = False,
-    exports = {
-        "env": fw_env
-    }
-)
+if 0: # disabled until needed for flash images
+    libstart = SConscript(
+        firmware_dir.File("start/SConscript"),
+        variant_dir = "build/firmware/start",
+        duplicate = False,
+        exports = {
+            "env": fw_env
+        }
+    )
 
 libneorv32 = SConscript(
     deps_dir.File("SConscript-libneorv32"),
@@ -193,15 +197,27 @@ libneorv32 = SConscript(
 )
 
 boot_env = fw_env.Clone(
-    LIBS = [libstart, libneorv32]
+    LIBS = [libneorv32]
 )
 
-uart = SConscript(
-    firmware_dir.File("uart/SConscript"),
-    variant_dir = "build/firmware/uart",
+
+bootrom = SConscript(
+    firmware_dir.File("bootrom/SConscript"),
+    variant_dir = "build/firmware/bootrom",
     duplicate = False,
     exports = {
-        "env": boot_env
+        "env": boot_env,
+        "fw_shared_dir": Dir("firmware/shared")
+    }
+)
+
+blinky = SConscript(
+    firmware_dir.File("blinky/SConscript"),
+    variant_dir = "build/firmware/blinky",
+    duplicate = False,
+    exports = {
+        "env": boot_env,
+        "fw_shared_dir": Dir("firmware/shared")
     }
 )
 
@@ -210,11 +226,11 @@ uart = SConscript(
 # Bitstreams
 #
 
-uart_textcfg = env.Command(
-    "build/uart.config",
-    [top_textcfg, top_rom_init, uart],
+main_textcfg = env.Command(
+    "build/main.config",
+    [top_textcfg, top_rom_init, bootrom],
     "ecpbram -i ${SOURCES[0]} -o $TARGET -f ${SOURCES[1]} -t ${SOURCES[2]}"
 )
 
-uart_bitstream = gw_env.Ecp5Bitstream(uart_textcfg)
+main_bitstream = gw_env.Ecp5Bitstream(main_textcfg)
 
