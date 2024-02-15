@@ -91,26 +91,28 @@ module top (
     // LED0
     //
 
-    reg pwm_clk;
-    reg [31:0] pwm_cnt;
-    always @(posedge clk30) begin
-        if (pwm_cnt > 50000) begin
-            pwm_clk <= ~pwm_clk;
-            pwm_cnt <= 0;
-        end else begin
-            pwm_cnt <= pwm_cnt + 1;
-        end
-    end
-
-    `WISHBONE_WIRES(led0);
-    led_controller led0 (
-        .sys_clk(sys_clk),
-        .sys_rst(sys_rst),
-        `WISHBONE_PORT(wb, led0),
-        .pwm_clk(pwm_clk),
-        .leds_color(user_leds_color),
-        .leds_en(user_leds_en)
-    );
+    assign user_leds_color = 3'b100;
+    assign user_leds_en = {1'b1, rom0_ack, rom0_err, ram0_ack, ram0_err, 1'b0, gpio_out[0]};
+//    reg pwm_clk;
+//    reg [31:0] pwm_cnt;
+//    always @(posedge clk30) begin
+//        if (pwm_cnt > 50000) begin
+//            pwm_clk <= ~pwm_clk;
+//            pwm_cnt <= 0;
+//        end else begin
+//            pwm_cnt <= pwm_cnt + 1;
+//        end
+//    end
+//
+//    `WISHBONE_WIRES(led0);
+//    led_controller led0 (
+//        .sys_clk(sys_clk),
+//        .sys_rst(sys_rst),
+//        `WISHBONE_PORT(wb, led0),
+//        .pwm_clk(pwm_clk),
+//        .leds_color(user_leds_color),
+//        .leds_en(user_leds_en)
+//    );
 
 
     // VCCIO0
