@@ -10,3 +10,6 @@
 [submodule "deps/neorv32"]
 	path = deps/neorv32
 	url = https://github.com/stnolting/neorv32.git
+[submodule "deps/scons-dfu"]
+	path = deps/scons-dfu
+	url = https://github.com/bboydt/scons-dfu.git

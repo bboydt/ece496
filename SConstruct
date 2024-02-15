@@ -75,6 +75,9 @@ gnu_flags = [
 ]
 
 fw_env = env.Clone(
+    tools = ["dfu"],
+    toolpath = ["deps/scons-dfu"],
+
     CC = "riscv64-unknown-elf-gcc",
     AS = "riscv64-unknown-elf-gcc",
     LINK = "riscv64-unknown-elf-gcc",
@@ -109,11 +112,11 @@ fw_env = env.Clone(
     #LINKCOMSTR   = "ld $TARGET",
     ARCOMSTR     = "ar $TARGET",
     RANLIBCOMSTR = "ranlib $TARGET",
+    
+    DFUSUFFIXFLAGS = "-v 1209 -p 5af1"
 )
 
-env.Append(
-    CPPSUFFIXES = [".s"]
-)
+env.Append(CPPSUFFIXES = [".s"])
 
 # Creates linker flags for linker scripts
 def create_linker_flags(self, scripts):
@@ -221,6 +224,7 @@ blinky = SConscript(
     }
 )
 
+fw_env.DfuSuffix("build/firmware/blinky.dfu", blinky)
 
 
 # Bitstreams
