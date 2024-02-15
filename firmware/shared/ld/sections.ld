@@ -25,16 +25,16 @@ SECTIONS
         PROVIDE(__global_pointer$ = .);
         *(.data);
         . = ALIGN(4);
-    } > RAM AT > FLASH
+    } > SRAM AT > FLASH
 
     .bss : ALIGN(4)
     {
         *(.bss);
         . = ALIGN(4);
-    } > RAM
+    } > SRAM
 }
 
-__stack_begin = ORIGIN(RAM) + LENGTH(RAM) - 4;
+__stack_begin = ORIGIN(SRAM) + LENGTH(SRAM) - 4;
 
 __data_addr = ADDR(.data);
 __data_load_addr = LOADADDR(.data);

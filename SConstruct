@@ -115,7 +115,7 @@ env.Append(
     CPPSUFFIXES = [".s"]
 )
 
-ld_scripts = [File("firmware/shared/memory.ld"), File("firmware/shared/sections_boot.ld")]
+ld_scripts = [File("firmware/shared/ld/memory.ld"), File("firmware/shared/ld/sections_bootrom.ld")]
 ld_script_flags = [f"-Wl,-T,{f.path}" for f in ld_scripts]
 
 def ld_emitter(target, source, env):
@@ -173,14 +173,15 @@ top_textcfg = gw_env.Ecp5Pnr(top_ast)
 # Firmware Libraries
 #
 
-libstart = SConscript(
-    firmware_dir.File("start/SConscript"),
-    variant_dir = "build/firmware/start",
-    duplicate = False,
-    exports = {
-        "env": fw_env
-    }
-)
+if 0: # disabled until needed for flash images
+    libstart = SConscript(
+        firmware_dir.File("start/SConscript"),
+        variant_dir = "build/firmware/start",
+        duplicate = False,
+        exports = {
+            "env": fw_env
+        }
+    )
 
 libneorv32 = SConscript(
     deps_dir.File("SConscript-libneorv32"),
@@ -193,12 +194,14 @@ libneorv32 = SConscript(
 )
 
 boot_env = fw_env.Clone(
-    LIBS = [libstart, libneorv32]
+    LIBS = [libneorv32]
 )
 
-uart = SConscript(
-    firmware_dir.File("uart/SConscript"),
-    variant_dir = "build/firmware/uart",
+
+
+bootrom = SConscript(
+    firmware_dir.File("bootrom/SConscript"),
+    variant_dir = "build/firmware/bootrom",
     duplicate = False,
     exports = {
         "env": boot_env
@@ -210,11 +213,11 @@ uart = SConscript(
 # Bitstreams
 #
 
-uart_textcfg = env.Command(
-    "build/uart.config",
-    [top_textcfg, top_rom_init, uart],
+main_textcfg = env.Command(
+    "build/main.config",
+    [top_textcfg, top_rom_init, bootrom],
     "ecpbram -i ${SOURCES[0]} -o $TARGET -f ${SOURCES[1]} -t ${SOURCES[2]}"
 )
 
-uart_bitstream = gw_env.Ecp5Bitstream(uart_textcfg)
+main_bitstream = gw_env.Ecp5Bitstream(main_textcfg)
 
