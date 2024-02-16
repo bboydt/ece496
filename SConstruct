@@ -179,15 +179,14 @@ top_textcfg = gw_env.Ecp5Pnr(top_ast)
 # Firmware Libraries
 #
 
-if 0: # disabled until needed for flash images
-    libstart = SConscript(
-        firmware_dir.File("start/SConscript"),
-        variant_dir = "build/firmware/start",
-        duplicate = False,
-        exports = {
-            "env": fw_env
-        }
-    )
+libstart = SConscript(
+    firmware_dir.File("start/SConscript"),
+    variant_dir = "build/firmware/start",
+    duplicate = False,
+    exports = {
+        "env": fw_env
+    }
+)
 
 libneorv32 = SConscript(
     deps_dir.File("SConscript-libneorv32"),
@@ -199,33 +198,30 @@ libneorv32 = SConscript(
     }
 )
 
-boot_env = fw_env.Clone(
-    LIBS = [libneorv32]
-)
-
-
 bootrom = SConscript(
     firmware_dir.File("bootrom/SConscript"),
     variant_dir = "build/firmware/bootrom",
     duplicate = False,
     exports = {
-        "env": boot_env,
+        "env": fw_env,
         "fw_shared_dir": Dir("firmware/shared")
     }
 )
+
+app_env = fw_env.Clone()
+app_env.Append(LIBS = [libstart, libneorv32])
 
 blinky = SConscript(
     firmware_dir.File("blinky/SConscript"),
     variant_dir = "build/firmware/blinky",
     duplicate = False,
     exports = {
-        "env": boot_env,
+        "env": app_env,
         "fw_shared_dir": Dir("firmware/shared")
     }
 )
 
 fw_env.DfuSuffix("build/firmware/blinky.dfu", blinky)
-
 
 # Bitstreams
 #

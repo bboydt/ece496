@@ -8,7 +8,7 @@ linker_flags = env.CreateLinkerFlags(linker_scripts)
 this_env = env.Clone()
 this_env.Append(LINKFLAGS = linker_flags)
 
-blinky_elf = this_env.Program("blinky.elf", ["crt0.S", "main.c"])
+blinky_elf = this_env.Program("blinky.elf", ["main.c"])
 
 blinky_bin = this_env.Command(
     "blinky.bin",
