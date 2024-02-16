@@ -95,7 +95,7 @@ module top (
     //
 
     assign user_leds_color = 3'b100;
-    assign user_leds_en = {1'b1, rom0_ack, rom0_err, ram0_ack, ram0_err, 1'b0, gpio_out[0]};
+    assign user_leds_en = {1'b1, rom0_err, ram0_ack, ~syzygy0_s[0], ~syzygy0_s[1], 1'b0, gpio[0]};
 //    reg pwm_clk;
 //    reg [31:0] pwm_cnt;
 //    always @(posedge clk30) begin

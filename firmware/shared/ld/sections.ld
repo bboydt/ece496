@@ -10,7 +10,8 @@ SECTIONS
     {
         KEEP(*(.text._start));
         KEEP(*(.text._crt0_init));
-        KEEP(*(.text._mtvec));
+        . = ALIGN(4);
+        KEEP(*(.text._vector_table));
         *(.text);
     } > FLASH
 

@@ -1,6 +1,6 @@
 Import("env")
 
 # Apparently using a lowercase .s will remove the -c flag when compliling start.o 
-libstart = env.StaticLibrary(["start.S"])
+libstart = env.StaticLibrary(["start.S", "vector.S"])
 
 Return("libstart")

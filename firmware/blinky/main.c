@@ -2,15 +2,15 @@
 
 #define BAUD_RATE 115200
 
-void isr(void)
+__attribute__((interrupt("machine"), weak))
+void uart0_rx_handler(void) 
 {
+    neorv32_uart0_getc();
+    neorv32_uart0_puts("it worked!\n");
 }
 
-int main(void)
+static void print_startup_message()
 {
-    neorv32_gpio_pin_clr(0);
-
-    neorv32_uart0_setup(BAUD_RATE, 0);
     neorv32_uart0_puts("\n");
     neorv32_uart0_puts("           __..-''\"'\"'-=.+\n");
     neorv32_uart0_puts("     __..''      __.-' R |\n");
@@ -23,10 +23,22 @@ int main(void)
     neorv32_uart0_puts("\n");
     neorv32_uart0_puts("Howdy sailor!!\n");
     neorv32_uart0_puts("\n");
+}
 
+
+int main(void)
+{
+    neorv32_gpio_pin_clr(0);
+
+    neorv32_uart0_setup(BAUD_RATE, 1);
+    neorv32_cpu_csr_set(CSR_MIE, 1 << UART0_RX_FIRQ_ENABLE);
+    neorv32_cpu_csr_set(CSR_MSTATUS, 1 << CSR_MSTATUS_MIE);
+
+    print_startup_message();
+    
     while (1)
     {
-        for (int i = 0; i < 10000000; i++);
+        for (int i = 0; i < 10000; i++);
         neorv32_gpio_pin_toggle(0);
     }
 }
