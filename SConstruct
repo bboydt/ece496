@@ -35,7 +35,7 @@ nextpnr_flags = [
     "--um5g-85k",
     "--speed=8", 
     "--package=CABGA381",
-    "--lpf=butterstick_r1_0.pcf"
+    "--lpf=board/butterstick_r1_0.pcf"
 ]
 
 ecppack_flags = [
@@ -171,7 +171,6 @@ top = SConscript(
 
 top_ast = top["ast"]
 top_rom_init = top["init_files"]["ROM0"]
-
 top_textcfg = gw_env.Ecp5Pnr(top_ast)
 
 
@@ -226,12 +225,11 @@ fw_env.DfuSuffix("build/firmware/blinky.dfu", blinky)
 # Bitstreams
 #
 
-main_textcfg = env.Command(
-    "build/gateware/main.config",
+top_bootrom_textcfg = env.Command(
+    "build/gateware/top/top_bootrom.config",
     [top_textcfg, top_rom_init, bootrom],
     "ecpbram -i ${SOURCES[0]} -o $TARGET -f ${SOURCES[1]} -t ${SOURCES[2]}"
 )
-
-main_bitstream = gw_env.Ecp5Bitstream(main_textcfg)
-fw_env.DfuSuffix("build/gateware/main.dfu", main_bitstream)
+top_bitstream = gw_env.Ecp5Bitstream(top_bootrom_textcfg)
+fw_env.DfuSuffix("build/gateware/top/top.dfu", top_bitstream)
 
