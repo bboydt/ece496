@@ -25,5 +25,4 @@ _start:
     sw a1, 0(a0)
     
     // jump to flash image
-    la a0, __image_base
-    jalr a0
+    jump __image_base, t0
