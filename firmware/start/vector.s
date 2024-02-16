@@ -1,5 +1,4 @@
 .text
-.align 4
 
 .weak exception_handler
 .weak timer_handler
@@ -21,6 +20,7 @@
 .weak slink_handler
 .weak trng_handler
 
+.align 16
 .global _vector_table
 _vector_table:
     .org  _vector_table + 0*4
@@ -72,4 +72,4 @@ onewire_handler:
 slink_handler:
 trng_handler:
     nop
-    j default_handler
+    mret
