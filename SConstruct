@@ -227,10 +227,11 @@ fw_env.DfuSuffix("build/firmware/blinky.dfu", blinky)
 #
 
 main_textcfg = env.Command(
-    "build/main.config",
+    "build/gateware/main.config",
     [top_textcfg, top_rom_init, bootrom],
     "ecpbram -i ${SOURCES[0]} -o $TARGET -f ${SOURCES[1]} -t ${SOURCES[2]}"
 )
 
 main_bitstream = gw_env.Ecp5Bitstream(main_textcfg)
+fw_env.DfuSuffix("build/gateware/main.dfu", main_bitstream)
 

@@ -35,6 +35,7 @@
 module top (
     input clk30,
     input [1:0] user_buttons,
+    output reset_n,
     output [2:0] user_leds_color,
     output [6:0] user_leds_en,
     output vccio_en,
@@ -51,6 +52,8 @@ module top (
         sys_clk = clk30;
         sys_rst = ~user_buttons[1];
     end
+
+    assign reset_n = ~sys_rst;
 
 
     // SPIFLASH
