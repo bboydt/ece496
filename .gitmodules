@@ -12,4 +12,7 @@
 	url = https://github.com/stnolting/neorv32.git
 [submodule "deps/scons-dfu"]
 	path = deps/scons-dfu
-	url = https://github.com/bboydt/scons-dfu.git
+    url = https://github.com/bboydt/scons-dfu.git
+[submodule "deps/rt"]
+    path = deps/rt
+    url = https://git.rtng.org/rt/rt.git
