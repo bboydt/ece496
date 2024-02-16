@@ -1,10 +1,11 @@
 #include <neorv32.h>
+#include <rt/start.h>
+#include <rt/task.h>
+#include <rt/tick.h>
 
 #define BAUD_RATE 115200
 #define ISR __attribute__((interrupt("machine")))
 #define MTIME_PERIOD (NEORV32_SYSINFO->CLK / 1000) // 1ms
-
-uint32_t systick = 0;
 
 ISR void uart0_rx_handler(void) 
 {
@@ -15,7 +16,7 @@ ISR void uart0_rx_handler(void)
 ISR void timer_handler(void)
 {
     neorv32_mtime_set_timecmp(neorv32_mtime_get_timecmp() + MTIME_PERIOD);
-    systick++;
+    rt_tick_advance();
 }
 
 static void print_startup_message()
@@ -33,7 +34,6 @@ static void print_startup_message()
     neorv32_uart0_puts("Howdy sailor!!\n");
     neorv32_uart0_puts("\n");
 }
-
 
 static void uart0_init()
 {
@@ -64,14 +64,32 @@ int main(void)
 
     print_startup_message();
 
-    uint32_t last_toggle = 0;
-    while (1)
+    rt_start();
+
+    for (;;);
+}
+
+
+
+
+
+
+
+
+
+static void blinky()
+{
+    unsigned long last_wake_tick = 0;
+
+    const unsigned long sleep_period = 500;
+
+    for (;;)
     {
-        uint32_t current_tick = systick;
-        if (current_tick - last_toggle >= 1000)
-        {
-            last_toggle = current_tick;
-            neorv32_gpio_pin_toggle(0);
-        }
+        neorv32_gpio_pin_toggle(0);
+        neorv32_uart0_puts("blinky!!\n");
+        rt_task_sleep_periodic(&last_wake_tick, sleep_period);
     }
 }
+
+RT_TASK(blinky, RT_STACK_MIN, 1);
+

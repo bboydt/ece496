@@ -7,6 +7,7 @@ import json
 deps_dir = Dir("deps")
 ecp5_soc_dir = deps_dir.Dir("ecp5-soc")
 neorv32_dir = ecp5_soc_dir.Dir("deps/neorv32")
+rt_dir = deps_dir.Dir("rt")
 firmware_dir = Dir("firmware")
 
 
@@ -87,6 +88,8 @@ fw_env = env.Clone(
 
     CPPPATH = [
         Dir("firmware/shared/include").srcnode(),
+        Dir("rt-riscv/include").srcnode(),
+        rt_dir.Dir("include").srcnode(),
         neorv32_dir.Dir("sw/lib/include").srcnode(),
     ],
     CPPDEFINES = {"RT_CYCLE_ENABLE": 1},
@@ -197,6 +200,15 @@ libneorv32 = SConscript(
     }
 )
 
+librt = SConscript(
+    rt_dir.File("src/SConscript"),
+    variant_dir = "build/firmware/rt",
+    duplicate = False,
+    exports = {
+        "env": fw_env
+    }
+)
+
 bootrom = SConscript(
     firmware_dir.File("bootrom/SConscript"),
     variant_dir = "build/firmware/bootrom",
@@ -208,7 +220,7 @@ bootrom = SConscript(
 )
 
 app_env = fw_env.Clone()
-app_env.Append(LIBS = [libstart, libneorv32])
+app_env.Append(LIBS = [libstart, libneorv32, librt])
 
 blinky = SConscript(
     firmware_dir.File("blinky/SConscript"),
