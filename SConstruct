@@ -200,6 +200,15 @@ libneorv32 = SConscript(
     }
 )
 
+librtriscv = SConscript(
+    firmware_dir.File("rt-riscv/SConscript"),
+    variant_dir = "build/firmware/rt-riscv",
+    duplicate = False,
+    exports = {
+        "env": fw_env
+    }
+)
+
 librt = SConscript(
     rt_dir.File("src/SConscript"),
     variant_dir = "build/firmware/rt",
@@ -220,7 +229,7 @@ bootrom = SConscript(
 )
 
 app_env = fw_env.Clone()
-app_env.Append(LIBS = [libstart, libneorv32, librt])
+app_env.Append(LIBS = [libstart, libneorv32, librtriscv, librt])
 
 blinky = SConscript(
     firmware_dir.File("blinky/SConscript"),
