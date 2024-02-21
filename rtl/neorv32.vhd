@@ -49,7 +49,7 @@ begin
         MEM_INT_IMEM_EN => false,
         MEM_INT_DMEM_EN => false,
         
-        IO_GPIO_NUM => 1, 
+        IO_GPIO_NUM => 7, 
         IO_MTIME_EN => true,
         IO_UART0_EN => true,
         IO_XIP_EN => true,

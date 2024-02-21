@@ -66,7 +66,7 @@ gnu_flags = [
     "-O0",
     "-ffunction-sections",
     "-fdata-sections",
-    "-flto",
+    #"-flto",
     "-nostartfiles",
     "-mno-fdiv",
     "-mstrict-align",
@@ -88,7 +88,7 @@ fw_env = env.Clone(
 
     CPPPATH = [
         Dir("firmware/shared/include").srcnode(),
-        Dir("rt-riscv/include").srcnode(),
+        Dir("firmware/rt-riscv/include").srcnode(),
         rt_dir.Dir("include").srcnode(),
         neorv32_dir.Dir("sw/lib/include").srcnode(),
     ],

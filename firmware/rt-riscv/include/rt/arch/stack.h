@@ -5,5 +5,5 @@
 #endif
 
 #ifndef RT_STACK_MIN
-#define RT_STACK_MIN 128
+#define RT_STACK_MIN 256
 #endif

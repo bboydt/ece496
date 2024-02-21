@@ -1,10 +1,10 @@
 MEMORY
 {
     /* ROM and SRAM are implemented as block rams */
-    ROM   : ORIGIN = 0x00000000, LENGTH = 16K
-    SRAM  : ORIGIN = 0x00004000, LENGTH = 16K
+    ROM   (RX)  : ORIGIN = 0x00000000, LENGTH = 16K
+    SRAM  (RW) : ORIGIN = 0x00004000, LENGTH = 16K
     /* RAM is the DRAM located on the board. We only use 1GB of the 8GB. */
-    RAM   : ORIGIN = 0x80000000, LENGTH = 1024M
+    RAM   (RW) : ORIGIN = 0x80000000, LENGTH = 1024M
     /* FLASH is the spiflash. The DFU bootloader allocates firmware a 4MB partition at 0x800000 in the flash. */
-    FLASH : ORIGIN = 0xE0800000, LENGTH = 4M
+    FLASH (RX)  : ORIGIN = 0xE0800000, LENGTH = 4M
 }
