@@ -91,7 +91,7 @@ _start:
     la sp, __stack_pointer
 
     // set trap vector
-    la t0, _execption_handler
+    la t0, _trap_handler
     csrw mtvec, t0
 
     // xxx testing for code flow

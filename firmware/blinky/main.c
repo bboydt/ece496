@@ -33,7 +33,7 @@ static void blinky()
 
     for (;;)
     {
-        //neorv32_gpio_pin_toggle(2);
+        neorv32_gpio_pin_toggle(5);
         neorv32_uart0_puts("blinky!!\n");
         rt_task_sleep_periodic(&last_wake_tick, sleep_period);
     }
@@ -48,7 +48,7 @@ void mcu_init(void)
     //neorv32_cpu_csr_set(CSR_MIE, 1 << UART0_RX_FIRQ_ENABLE);
 
 
-    print_startup_message();
+    //print_startup_message();
 
     neorv32_gpio_pin_set(4);
 }

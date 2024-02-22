@@ -69,11 +69,12 @@ rt_start:
 
     // enable interrupts
     li t0, 8
-    //csrs mstatus, t0
+    csrs mstatus, t0
 
     // jump to task entry
+    jalr ra
+
 0:  j 0b
-    jr ra
 
 // initialize cycle counter
 .global rt_cycle_init
