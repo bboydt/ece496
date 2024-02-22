@@ -21,6 +21,10 @@ void *context_init(void *stack, size_t stack_size)
     void *const sp = (char*)stack + stack_size;
     struct context *ctx = sp;
     --ctx;
+    for (int i = 0; i < sizeof(struct context); i++)
+    {
+        ((uint8_t*)ctx)[i] = 0;
+    }
     return ctx;
 }
 

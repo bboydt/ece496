@@ -45,7 +45,7 @@ _trap_handler:
     
     // execute execption handler
     csrr a0, mcause
-    jal _execption_handler
+    call _execption_handler
 
     // load registers
     lw x31, (4*30)(sp)
@@ -115,6 +115,7 @@ _start:
     j 1b
 2:
 
+
     // xxx
     li a0, 1
     call neorv32_gpio_pin_set
@@ -145,7 +146,7 @@ _start:
 0:  beq t0, t1, 1f // while t0 != t1
     lw t2, (0*4)(t0) // task init function
     add t0, t0, (1*4)
-    jalr t2
+    jalr ra, t2
     j 0b
 1:
 

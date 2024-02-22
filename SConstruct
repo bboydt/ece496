@@ -72,7 +72,8 @@ gnu_flags = [
     "-mstrict-align",
     "-mbranch-cost=10",
     "-nostdlib",
-    "-Wl,--gc-sections"
+    "-Wl,--gc-sections",
+    "-g"
 ]
 
 fw_env = env.Clone(
@@ -92,7 +93,7 @@ fw_env = env.Clone(
         rt_dir.Dir("include").srcnode(),
         neorv32_dir.Dir("sw/lib/include").srcnode(),
     ],
-    CPPDEFINES = {"RT_CYCLE_ENABLE": 1},
+    CPPDEFINES = {"RT_CYCLE_ENABLE": 0},
     CCFLAGS = gnu_flags,
     ASFLAGS = gnu_flags,
     CFLAGS = ["-std=gnu17"],
@@ -241,7 +242,7 @@ blinky = SConscript(
     }
 )
 
-fw_env.DfuSuffix("build/firmware/blinky.dfu", blinky)
+fw_env.DfuSuffix("build/firmware/blinky/blinky.dfu", blinky)
 
 # Bitstreams
 #

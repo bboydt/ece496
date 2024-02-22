@@ -28,7 +28,13 @@ entity neorv32_wrapper is
         xip_csn : out std_ulogic;
         xip_clk : out std_ulogic;
         xip_mosi : out std_ulogic;
-        xip_miso : in std_ulogic
+        xip_miso : in std_ulogic;
+
+        jtag_trst : in std_ulogic;
+        jtag_tck : in std_ulogic;
+        jtag_tdi : in std_ulogic;
+        jtag_tdo : out std_ulogic;
+        jtag_tms : in std_ulogic
     );
 end entity;
 
@@ -39,7 +45,9 @@ begin
     neorv32_top_inst: neorv32_top
     generic map (
         CLOCK_FREQUENCY => 30_000_000,
+
         INT_BOOTLOADER_EN => false,
+        ON_CHIP_DEBUGGER_EN => true,
         
         CPU_EXTENSION_RISCV_A => true,
         CPU_EXTENSION_RISCV_C => true,
@@ -48,18 +56,15 @@ begin
         
         MEM_INT_IMEM_EN => false,
         MEM_INT_DMEM_EN => false,
+        MEM_EXT_EN => true,
         
         IO_GPIO_NUM => 7, 
         IO_MTIME_EN => true,
         IO_UART0_EN => true,
         IO_XIP_EN => true,
         
-        MEM_EXT_EN => true,
-
-        
         IO_UART0_RX_FIFO => 64,
         IO_UART0_TX_FIFO => 64
-
     )
     port map (
         clk_i  => sys_clk,
@@ -84,7 +89,14 @@ begin
         xip_csn_o => xip_csn,
         xip_clk_o => xip_clk,
         xip_dat_i => xip_miso,
-        xip_dat_o => xip_mosi
+        xip_dat_o => xip_mosi,
+
+        jtag_trst_i => jtag_trst,
+        jtag_tck_i  => jtag_tck,
+        jtag_tdi_i  => jtag_tdi,
+        jtag_tdo_o  => jtag_tdo,
+        jtag_tms_i  => jtag_tms
+
     );
 
 end architecture;

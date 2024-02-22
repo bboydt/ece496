@@ -151,6 +151,11 @@ module top (
         .xip_clk(spiflash_clk),
         .xip_mosi(spiflash_mosi),
         .xip_miso(spiflash_miso),
+        .jtag_trst(1'b1),
+        .jtag_tck(syzygy0_s[16]),
+        .jtag_tdi(syzygy0_s[17]),
+        .jtag_tdo(syzygy0_s[18]),
+        .jtag_tms(syzygy0_s[19]),
         `WISHBONE_PORT(bus, cpu0)
     );
     

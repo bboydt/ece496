@@ -44,11 +44,13 @@ SECTIONS
         . = ALIGN(__rw_region_align__);
         __rw_region__ = .;
         *(.data*)
+        *(.sdata*)
     } > SRAM AT> FLASH
 
     .bss (NOLOAD) :
     {
         *(.bss*)
+        *(.sbss*)
         . = ALIGN(__rw_region_align__);
         __rw_region_end__ = .;
     } > SRAM

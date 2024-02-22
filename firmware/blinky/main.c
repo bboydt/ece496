@@ -29,7 +29,7 @@ static void blinky()
 
     const unsigned long sleep_period = 500;
 
-    neorv32_gpio_pin_set(2);
+    neorv32_gpio_pin_set(5);
 
     for (;;)
     {
@@ -50,5 +50,5 @@ void mcu_init(void)
 
     print_startup_message();
 
-    neorv32_gpio_pin_set(1);
+    neorv32_gpio_pin_set(4);
 }
