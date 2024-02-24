@@ -10,8 +10,9 @@
 
 struct context
 {
+    uint32_t mstatus;
+    uint32_t mepc;
     uint32_t ra;
-    uint32_t __pad0;
     uint32_t gp;
     uint32_t tp;
     uint32_t t0;
@@ -41,7 +42,6 @@ struct context
     uint32_t t4;
     uint32_t t5;
     uint32_t t6;
-    uint32_t __pad1;
 };
 
 void *context_init(void *stack, size_t stack_size)
@@ -63,6 +63,8 @@ __attribute__((noreturn)) void rt_task_entry_arg(uintptr_t arg, void (*fn)(uintp
 void *rt_context_init(void (*fn)(void), void *stack, size_t stack_size)
 {
     struct context *const ctx = context_init(stack, stack_size);
+    ctx->mepc = (uint32_t)rt_task_entry;
+    ctx->mstatus = 8;
     ctx->ra = (uint32_t)rt_task_entry;
     ctx->a0 = (uint32_t)fn;
     return ctx;
@@ -71,6 +73,8 @@ void *rt_context_init(void (*fn)(void), void *stack, size_t stack_size)
 void *rt_context_init_arg(void (*fn)(uintptr_t), uintptr_t arg, void *stack, size_t stack_size)
 {
     struct context *const ctx = context_init(stack, stack_size);
+    ctx->mepc = (uint32_t)rt_task_entry_arg;
+    ctx->mstatus = 8;
     ctx->ra = (uint32_t)rt_task_entry_arg;
     ctx->a0 = (uint32_t)arg;
     ctx->a1 = (uint32_t)fn;
@@ -89,7 +93,7 @@ __attribute__((noreturn, weak)) void rt_trap(void)
 {
     for (;;)
     {
-        __asm__("ebreak");
+        __asm__("nop");
     }
 }
 
@@ -98,12 +102,10 @@ void rt_syscall(void)
     __asm__("ecall");
 }
 
-// @todo figure out what to actually do here
-__attribute__((alias("rt_syscall"))) void rt_syscall_pend(void);
-
 void mti_handler(void)
 {
-    neorv32_mtime_set_timecmp(neorv32_mtime_get_timecmp() + (NEORV32_SYSINFO->CLK / 1000));
     rt_tick_advance();
+    uint32_t timecmp = neorv32_mtime_get_timecmp();
+    neorv32_mtime_set_timecmp(timecmp + (NEORV32_SYSINFO->CLK / 10));
 }
 

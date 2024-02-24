@@ -3,6 +3,7 @@
 `include "ecp5_soc/cores/rom.v"
 `include "ecp5_soc/cores/bram.v"
 
+`include "pll.v"
 `include "cores/leds.v"
 `include "cores/vccio.v"
 
@@ -49,12 +50,20 @@ module top (
     reg sys_rst;
 
     always @(*) begin
-        sys_clk = clk30;
-        sys_rst = ~user_buttons[1];
+        sys_rst = ~pll_locked | ~user_buttons[1];
     end
 
-    assign reset_n = ~sys_rst;
+    assign reset_n = user_buttons[0];
 
+    // PLL
+    //
+
+    wire pll_locked;
+    ecp5_pll pll (
+        .clk30(clk30),
+        .clk90(sys_clk),
+        .locked(pll_locked)
+    );
 
     // SPIFLASH
     //

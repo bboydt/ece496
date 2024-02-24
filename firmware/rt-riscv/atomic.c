@@ -2,14 +2,17 @@
 #include <neorv32.h>
 
 // Disable interrupts and return the previous mask.
-static inline void disable(void)
+static inline uint32_t disable(void)
 {
-    neorv32_cpu_csr_clr(CSR_MSTATUS, 1 << CSR_MSTATUS_MIE);
+    uint32_t prev_status = neorv32_cpu_csr_read(CSR_MSTATUS);
+    uint32_t masked_status = prev_status & ~(1 << CSR_MSTATUS_MIE);
+    neorv32_cpu_csr_write(CSR_MSTATUS, masked_status);
+    return prev_status;
 }
 
-static inline void restore(void)
+static inline void restore(uint32_t status)
 {
-    neorv32_cpu_csr_set(CSR_MSTATUS, 1 << CSR_MSTATUS_MIE);
+    neorv32_cpu_csr_write(CSR_MSTATUS, status);
 }
 
 static inline void barrier_start(int memorder)
@@ -35,12 +38,12 @@ unsigned char __atomic_exchange_1(volatile void *ptr, unsigned char val,
 {
     volatile unsigned char *const p = ptr;
 
-    disable();
+    const uint32_t mask = disable();
     barrier_start(memorder);
     const unsigned char old = *p;
     *p = val;
     barrier_end(memorder);
-    restore();
+    restore(mask);
 
     return old;
 }
@@ -49,12 +52,12 @@ unsigned __atomic_exchange_4(volatile void *ptr, unsigned val, int memorder)
 {
     volatile unsigned *const p = ptr;
 
-    disable();
+    const uint32_t mask = disable();
     barrier_start(memorder);
     const unsigned old = *p;
     *p = val;
     barrier_end(memorder);
-    restore();
+    restore(mask);
 
     return old;
 }
@@ -63,12 +66,12 @@ unsigned __atomic_fetch_add_4(volatile void *ptr, unsigned val, int memorder)
 {
     volatile unsigned *const p = ptr;
 
-    disable();
+    const uint32_t mask = disable();
     barrier_start(memorder);
     const unsigned old = *p;
     *p = old + val;
     barrier_end(memorder);
-    restore();
+    restore(mask);
 
     return old;
 }
@@ -77,12 +80,12 @@ unsigned __atomic_fetch_sub_4(volatile void *ptr, unsigned val, int memorder)
 {
     volatile unsigned *const p = ptr;
 
-    disable();
+    const uint32_t mask = disable();
     barrier_start(memorder);
     const unsigned old = *p;
     *p = old - val;
     barrier_end(memorder);
-    restore();
+    restore(mask);
 
     return old;
 }
@@ -91,12 +94,12 @@ unsigned __atomic_fetch_and_4(volatile void *ptr, unsigned val, int memorder)
 {
     volatile unsigned *const p = ptr;
 
-    disable();
+    const uint32_t mask = disable();
     barrier_start(memorder);
     const unsigned old = *p;
     *p = old & val;
     barrier_end(memorder);
-    restore();
+    restore(mask);
 
     return old;
 }
@@ -105,12 +108,12 @@ unsigned __atomic_fetch_or_4(volatile void *ptr, unsigned val, int memorder)
 {
     volatile unsigned *const p = ptr;
 
-    disable();
+    const uint32_t mask = disable();
     barrier_start(memorder);
     const unsigned old = *p;
     *p = old | val;
     barrier_end(memorder);
-    restore();
+    restore(mask);
 
     return old;
 }
@@ -124,7 +127,7 @@ bool __atomic_compare_exchange_1(volatile void *ptr, void *exp,
     volatile unsigned char *const p = ptr;
     unsigned char *const e = exp;
 
-    disable();
+    const uint32_t mask = disable();
     barrier_start(success_memorder);
     const unsigned char old = *p;
     const bool equal = old == *e;
@@ -138,7 +141,7 @@ bool __atomic_compare_exchange_1(volatile void *ptr, void *exp,
         *e = old;
         barrier_end(fail_memorder);
     }
-    restore();
+    restore(mask);
     return equal;
 }
 
@@ -148,12 +151,12 @@ bool __atomic_compare_exchange_4(volatile void *ptr, void *exp, unsigned val,
 {
     (void)weak;
 
-    volatile unsigned *const p = ptr;
-    unsigned *const e = exp;
+    volatile uint32_t *const p = ptr;
+    uint32_t *const e = exp;
 
-    disable();
+    const uint32_t mask = disable();
     barrier_start(success_memorder);
-    const unsigned old = *p;
+    const uint32_t old = *p;
     const bool equal = old == *e;
     if (equal)
     {
@@ -165,7 +168,6 @@ bool __atomic_compare_exchange_4(volatile void *ptr, void *exp, unsigned val,
         *e = old;
         barrier_end(fail_memorder);
     }
-    restore();
+    restore(mask);
     return equal;
 }
-

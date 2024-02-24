@@ -44,12 +44,12 @@ begin
 
     neorv32_top_inst: neorv32_top
     generic map (
-        CLOCK_FREQUENCY => 30_000_000,
+        CLOCK_FREQUENCY => 90_000_000,
 
         INT_BOOTLOADER_EN => false,
         ON_CHIP_DEBUGGER_EN => true,
-        
-        CPU_EXTENSION_RISCV_A => true,
+
+        CPU_EXTENSION_RISCV_A => false,
         CPU_EXTENSION_RISCV_C => true,
         CPU_EXTENSION_RISCV_M => true,
         CPU_EXTENSION_RISCV_Zicntr => true,
@@ -61,7 +61,9 @@ begin
         IO_GPIO_NUM => 7, 
         IO_MTIME_EN => true,
         IO_UART0_EN => true,
-        IO_XIP_EN => true,
+
+        XIP_EN => true,
+        XIP_CACHE_EN => true,
         
         IO_UART0_RX_FIFO => 64,
         IO_UART0_TX_FIFO => 64

@@ -61,7 +61,7 @@ gw_env = env.Clone(
 
 gnu_flags = [
     "-Wall",
-    "-march=rv32imac_zicsr_zifencei",
+    "-march=rv32imc_zicsr_zifencei",
     "-mabi=ilp32",
     "-O0",
     "-ffunction-sections",
