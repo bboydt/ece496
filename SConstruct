@@ -183,7 +183,7 @@ top_textcfg = gw_env.Ecp5Pnr(top_ast)
 #
 
 libstart = SConscript(
-    firmware_dir.File("start/SConscript"),
+    firmware_dir.File("start_nort/SConscript"),
     variant_dir = "build/firmware/start",
     duplicate = False,
     exports = {
@@ -201,23 +201,25 @@ libneorv32 = SConscript(
     }
 )
 
-librtriscv = SConscript(
-    firmware_dir.File("rt-riscv/SConscript"),
-    variant_dir = "build/firmware/rt-riscv",
-    duplicate = False,
-    exports = {
-        "env": fw_env
-    }
-)
-
-librt = SConscript(
-    rt_dir.File("src/SConscript"),
-    variant_dir = "build/firmware/rt",
-    duplicate = False,
-    exports = {
-        "env": fw_env
-    }
-)
+# not using rtos for milestone 1
+#
+#librtriscv = SConscript(
+#    firmware_dir.File("rt-riscv/SConscript"),
+#    variant_dir = "build/firmware/rt-riscv",
+#    duplicate = False,
+#    exports = {
+#        "env": fw_env
+#    }
+#)
+#
+#librt = SConscript(
+#    rt_dir.File("src/SConscript"),
+#    variant_dir = "build/firmware/rt",
+#    duplicate = False,
+#    exports = {
+#        "env": fw_env
+#    }
+#)
 
 bootrom = SConscript(
     firmware_dir.File("bootrom/SConscript"),
@@ -230,11 +232,11 @@ bootrom = SConscript(
 )
 
 app_env = fw_env.Clone()
-app_env.Append(LIBS = [libstart, libneorv32, librtriscv, librt])
+app_env.Append(LIBS = [libstart, libneorv32])
 
-blinky = SConscript(
-    firmware_dir.File("blinky/SConscript"),
-    variant_dir = "build/firmware/blinky",
+m1 = SConscript(
+    firmware_dir.File("m1/SConscript"),
+    variant_dir = "build/firmware/m1",
     duplicate = False,
     exports = {
         "env": app_env,
@@ -242,7 +244,7 @@ blinky = SConscript(
     }
 )
 
-fw_env.DfuSuffix("build/firmware/blinky/blinky.dfu", blinky)
+fw_env.DfuSuffix("build/firmware/m1/m1.dfu", m1)
 
 # Bitstreams
 #

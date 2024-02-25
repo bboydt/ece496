@@ -58,7 +58,7 @@ begin
         MEM_INT_DMEM_EN => false,
         MEM_EXT_EN => true,
         
-        IO_GPIO_NUM => 7, 
+        IO_GPIO_NUM => 15, 
         IO_MTIME_EN => true,
         IO_UART0_EN => true,
 

@@ -145,6 +145,30 @@ module top (
     );
 
 
+    // Motor Pins
+    //
+
+    reg [31:0] mclk_counter;
+    reg mclk;
+    always @(posedge clk30) begin
+        mclk_counter = mclk_counter + 1;
+        if (mclk_counter > 30000) begin
+            mclk = ~mclk;
+            mclk_counter = 0;
+        end else begin
+            mclk = mclk;
+            mclk_counter = mclk_counter;
+        end
+    end
+
+    integer i;
+    always @(*) begin
+        for (i = 0; i < 4; i++) begin
+            syzygy0_s[2 + 2 * i] = gpio[7 + 2 * i] & mclk;
+            syzygy0_s[3 + 2 * i] = gpio[8 + 2 * i];
+        end
+    end
+
     // CPU0
     //
 
