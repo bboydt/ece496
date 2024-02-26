@@ -7,7 +7,7 @@ import json
 deps_dir = Dir("deps")
 ecp5_soc_dir = deps_dir.Dir("ecp5-soc")
 neorv32_dir = ecp5_soc_dir.Dir("deps/neorv32")
-rt_dir = deps_dir.Dir("rt")
+rt_dir = Dir("/Users/boyd/Me/rt") # @nocheckin testing rt
 firmware_dir = Dir("firmware")
 
 
@@ -91,6 +91,7 @@ fw_env = env.Clone(
         Dir("firmware/shared/include").srcnode(),
         Dir("firmware/rt-riscv/include").srcnode(),
         rt_dir.Dir("include").srcnode(),
+        rt_dir.Dir("arch/riscv/include").srcnode(),
         neorv32_dir.Dir("sw/lib/include").srcnode(),
     ],
     CPPDEFINES = {"RT_CYCLE_ENABLE": 0},
@@ -182,6 +183,16 @@ top_textcfg = gw_env.Ecp5Pnr(top_ast)
 # Firmware Libraries
 #
 
+libstartrt = SConscript(
+    firmware_dir.File("start/SConscript"),
+    variant_dir = "build/firmware/start_rt",
+    duplicate = False,
+    exports = {
+        "env": fw_env
+    }
+)
+
+
 libstart = SConscript(
     firmware_dir.File("start_nort/SConscript"),
     variant_dir = "build/firmware/start",
@@ -201,25 +212,23 @@ libneorv32 = SConscript(
     }
 )
 
-# not using rtos for milestone 1
-#
-#librtriscv = SConscript(
-#    firmware_dir.File("rt-riscv/SConscript"),
-#    variant_dir = "build/firmware/rt-riscv",
-#    duplicate = False,
-#    exports = {
-#        "env": fw_env
-#    }
-#)
-#
-#librt = SConscript(
-#    rt_dir.File("src/SConscript"),
-#    variant_dir = "build/firmware/rt",
-#    duplicate = False,
-#    exports = {
-#        "env": fw_env
-#    }
-#)
+librt = SConscript(
+    rt_dir.File("src/SConscript"),
+    variant_dir = "build/firmware/rt",
+    duplicate = False,
+    exports = {
+        "env": fw_env
+    }
+)
+
+librt_riscv = SConscript(
+    dirs = rt_dir.Dir("arch/riscv"),
+    variant_dir = "build/firmware/rt/riscv",
+    duplicate = False,
+    exports = {
+        "env": fw_env
+    }
+)
 
 bootrom = SConscript(
     firmware_dir.File("bootrom/SConscript"),
@@ -231,9 +240,26 @@ bootrom = SConscript(
     }
 )
 
+
+# RT Blinky
+app_rt_env = fw_env.Clone()
+app_rt_env.Append(LIBS = [libstartrt, libneorv32, librt, librt_riscv])
+blinky = SConscript(
+    firmware_dir.File("blinky/SConscript"),
+    variant_dir = "build/firmware/blinky",
+    duplicate = False,
+    exports = {
+        "env": app_rt_env,
+        "fw_shared_dir": Dir("firmware/shared")
+    }
+)
+fw_env.DfuSuffix("build/firmware/blinky/blinky.dfu", blinky)
+
+
+
+# Milestone 1
 app_env = fw_env.Clone()
 app_env.Append(LIBS = [libstart, libneorv32])
-
 m1 = SConscript(
     firmware_dir.File("m1/SConscript"),
     variant_dir = "build/firmware/m1",
@@ -243,8 +269,10 @@ m1 = SConscript(
         "fw_shared_dir": Dir("firmware/shared")
     }
 )
-
 fw_env.DfuSuffix("build/firmware/m1/m1.dfu", m1)
+
+
+
 
 # Bitstreams
 #

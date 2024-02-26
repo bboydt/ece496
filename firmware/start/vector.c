@@ -7,9 +7,18 @@
 #include <rt/syscall.h>
 #include <rt/tick.h>
 
-extern void mti_handler(void);
+#include "common.h"
+
+extern void rt_syscall_handler(void);
 
 RT_STACK(stack, 256);
+
+void mti_handler(void)
+{
+    neorv32_gpio_pin_set(0);
+    rt_tick_advance();
+    neorv32_mtime_set_timecmp(neorv32_mtime_get_time() + TICK_PERIOD);
+}
 
 static void default_handler(void)
 {

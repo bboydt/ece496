@@ -161,12 +161,15 @@ module top (
         end
     end
 
-    integer i;
     always @(*) begin
-        for (i = 0; i < 4; i++) begin
-            syzygy0_s[2 + 2 * i] = gpio[7 + 2 * i] & mclk;
-            syzygy0_s[3 + 2 * i] = gpio[8 + 2 * i];
-        end
+        syzygy0_s[12] = gpio[11] & mclk;
+        syzygy0_s[14] = gpio[12];
+        syzygy0_s[16] = gpio[13] & mclk;
+        syzygy0_s[18] = gpio[14];
+        syzygy0_s[20] = gpio[7 ] & mclk;
+        syzygy0_s[22] = ~gpio[8 ];
+        syzygy0_s[24] = gpio[9 ] & mclk;
+        syzygy0_s[26] = ~gpio[10];
     end
 
     // CPU0
@@ -185,10 +188,10 @@ module top (
         .xip_mosi(spiflash_mosi),
         .xip_miso(spiflash_miso),
         .jtag_trst(1'b1),
-        .jtag_tck(syzygy0_s[16]),
+        .jtag_tck(syzygy0_s[15]),
         .jtag_tdi(syzygy0_s[17]),
-        .jtag_tdo(syzygy0_s[18]),
-        .jtag_tms(syzygy0_s[19]),
+        .jtag_tdo(syzygy0_s[19]),
+        .jtag_tms(syzygy0_s[21]),
         `WISHBONE_PORT(bus, cpu0)
     );
     
