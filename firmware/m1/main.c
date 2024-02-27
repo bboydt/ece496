@@ -20,6 +20,8 @@
 #define fprintf(uart, fmt, ...) neorv32_uart_printf(uart, fmt, ## __VA_ARGS__)
 #define printf(fmt, ...) fprintf(stdout, fmt, ## __VA_ARGS__)
 
+#define fputs(uart, str) neorv32_uart_puts(uart, str)
+
 #define print_error(fmt, ...) fprintf(stderr, "\e[0;31m[ERROR] " fmt "\n\e[0m", ## __VA_ARGS__) 
 #define print_warn(fmt, ...)  fprintf(stderr, "\e[0;33m[WARN]  " fmt "\n\e[0m", ## __VA_ARGS__) 
 #define print_log(fmt, ...)   fprintf(stderr, "\e[0;37m[INFO]  " fmt "\n", ## __VA_ARGS__)
@@ -235,9 +237,8 @@ int main(void)
     // enabled interrupts
     neorv32_cpu_csr_set(CSR_MSTATUS, 1 << CSR_MSTATUS_MIE);
 
-    print_error("This is an error.");
-    print_warn("This is a warning.");
-    print_log("This is a log.");
+    // enable advertising
+    fputs(stdout, "AT+FLAG0");
 
     for (;;);
 }
