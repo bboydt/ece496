@@ -6,7 +6,6 @@ from dataclasses import dataclass
 
 gamepad = hid.device()
 gamepad.open(0x054c, 0x09cc)
-gamepad.set_nonblocking(True)
 
 @dataclass
 class AxisState:
@@ -29,7 +28,7 @@ class GamepadState:
 state = GamepadState([0, 128, 128, 128, 128])
 try:
     while True:
-        raw_state = gamepad.read(64)
+        raw_state = gamepad.read(64, 10)
         if raw_state:
             state = GamepadState(raw_state)
 
