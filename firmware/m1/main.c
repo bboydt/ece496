@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
+#include "ascii.h"
+
 // Printing
 //
 
@@ -22,9 +24,9 @@
 
 #define fputs(uart, str) neorv32_uart_puts(uart, str)
 
-#define print_error(fmt, ...) fprintf(stderr, "\e[0;31m[ERROR] " fmt "\n\e[0m", ## __VA_ARGS__) 
-#define print_warn(fmt, ...)  fprintf(stderr, "\e[0;33m[WARN]  " fmt "\n\e[0m", ## __VA_ARGS__) 
-#define print_log(fmt, ...)   fprintf(stderr, "\e[0;37m[INFO]  " fmt "\n", ## __VA_ARGS__)
+#define print_error(fmt, ...) fprintf(stderr, ASCII_RED "[error]" ASCII_RESET " " fmt "\n", ## __VA_ARGS__) 
+#define print_warn(fmt, ...)  fprintf(stderr, ASCII_YELLOW "[warn]" ASCII_RESET "  " fmt "\n", ## __VA_ARGS__) 
+#define print_log(fmt, ...)   fprintf(stderr, "[info]  " fmt "\n", ## __VA_ARGS__)
 
 #define getc(uart) neorv32_uart_getc(uart)
 
@@ -238,7 +240,9 @@ int main(void)
     neorv32_cpu_csr_set(CSR_MSTATUS, 1 << CSR_MSTATUS_MIE);
 
     // enable advertising
-    fputs(stdout, "AT+FLAG0");
+    print_error("This is an error.");
+    print_warn("This is a warning.");
+    print_log("This is a log.");
 
     for (;;);
 }
