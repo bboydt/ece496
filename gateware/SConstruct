@@ -1,4 +1,4 @@
-# Builds Firmware
+# Builds Gateware
 
 import os
 
@@ -17,11 +17,13 @@ if "TERM" in os.environ:
 
 SConscript(
     "SConscript",
-    variant_dir = root_dir.Dir("build/fw"),
+    variant_dir = root_dir.Dir("build/gw"),
     duplicate = False,
     exports = {
         "env": env,
         "root_dir": root_dir,
         "deps_dir": deps_dir,
+        "bootrom": root_dir.File("build/fw/app/bootrom/bootrom.init")
     }
 )
+

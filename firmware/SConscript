@@ -1,11 +1,11 @@
-# Builds firmware
-
-Import("*")
+# Builds Firmware
 
 import os
 
-# Create Firmware Environment
+Import("*")
 
+
+# Create Firmware Environment
 gnu_flags = [
     "-Wall",
     "-march=rv32imc_zicsr_zifencei",
@@ -71,12 +71,11 @@ fw_env.Append(CPPSUFFIX = ".s")
 
 
 # Build Libraries
-
 lib_env = fw_env.Clone()
 
 libneorv32 = SConscript(
     deps_dir.File("SConscript-neorv32"),
-    variant_dir = "fw/neorv32",
+    variant_dir = "lib/neorv32",
     duplicate = False,
     exports = {
         "env": lib_env,
@@ -86,7 +85,7 @@ libneorv32 = SConscript(
 
 librt = SConscript(
     dirs = deps_dir.Dir("rt/src"),
-    variant_dir = "fw/rt",
+    variant_dir = "lib/rt",
     duplicate = False,
     exports = {
         "env": lib_env
@@ -95,7 +94,7 @@ librt = SConscript(
 
 librt_riscv = SConscript(
     dirs = deps_dir.Dir("rt/arch/riscv"),
-    variant_dir = "fw/rt/riscv",
+    variant_dir = "lib/rt/riscv",
     duplicate = False,
     exports = {
         "env": lib_env
@@ -114,7 +113,7 @@ for lib in libs:
     if libs[lib] is None:
         libs[lib] = SConscript(
             dirs = lib,
-            variant_dir = "fw/" + lib,
+            variant_dir = "lib/" + lib,
             duplicate = False,
             exports = {
                 "env": lib_env
@@ -123,7 +122,6 @@ for lib in libs:
 
 
 # Build Apps
-
 # each app needs an ld_scripts and libs value
 apps = {
     "bootrom": {
@@ -165,7 +163,7 @@ for app in apps:
 
     SConscript(
         dirs = app,
-        variant_dir = "fw/" + app,
+        variant_dir = "app/" + app,
         duplicate = False,
         exports = {
             "env": app_env

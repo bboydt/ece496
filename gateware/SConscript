@@ -1,0 +1,110 @@
+# Builds Gateware
+
+import json
+
+Import("*")
+
+# Create Gateware Environment
+yosys_flags = [
+    "-q",
+]
+
+nextpnr_flags = [ 
+    "--um5g-85k",
+    "--speed=8", 
+    "--package=CABGA381",
+    "--lpf=" + root_dir.File("gateware/board/butterstick/r1_0.pcf").path
+]
+
+ecppack_flags = [
+    "--compress",
+    "--freq=38.8",
+]
+
+gw_env = env.Clone(
+    toolpath = [deps_dir.Dir("scons-fpga"), deps_dir.Dir("scons-dfu")],
+    tools = ["yosys", "nextpnr", "trellis", "icarus", "dfu"],
+    GHDL = "ghdl",
+    VFLAGS = "-sv",
+    YOSYSFLAGS = yosys_flags,
+    PNRFLAGS = nextpnr_flags,
+    ECPPACKFLAGS = ecppack_flags,
+    VPATH = [deps_dir.Dir("ecp5-soc/rtl").srcnode()],
+    DFUSUFFIXFLAGS = "-v 1209 -p 5af1"
+)
+
+
+# Neorv32 Wrapper
+
+neorv32_wrapper = SConscript(
+    deps_dir.File("ecp5-soc/deps/SConscript-neorv32"),
+    variant_dir = "neorv32",
+    duplicate = False,
+    exports = {
+        "env": gw_env,
+        "neorv32_dir": deps_dir.Dir("neorv32"),
+        "neorv32_wrapper_src": File("neorv32.vhd")
+    }
+)
+
+
+
+# Memory Config
+
+# loads the memory json file and emits verilog macros for the address and origin of each memory region
+init_files = {}
+memory_json = gw_env.File("memory.json")
+memory_config = json.loads(memory_json.get_text_contents())
+defines = {}
+for addr_range in memory_config:
+    name = addr_range["name"]
+    origin = int(addr_range["origin"], 0)
+    length = int(addr_range["length"], 0)
+    mask = length - 1
+    init = addr_range.get("init", False)
+    width = addr_range.get("width", 32)
+
+    defines[f"{name}_ADDR"] = f"\'h{origin:x}"
+    defines[f"{name}_LENGTH"] = f"'h{length:x}"
+    defines[f"{name}_MASK"] = f"'h{mask:x}"
+    
+    # if the memory region is initialized create a bram init file
+    if (init):
+        init_file = gw_env.Command(f"{name}.init", [], f"ecpbram -g $TARGET -w {width} -d {length/width:0.0f}")
+        gw_env.Depends("top.json", init_file)
+        
+        init_files[name] = init_file
+        defines[f"{name}_INIT_FILE"] = f"\\\"{str(init_file[0].abspath)}\\\""
+
+gw_env.Append(VDEFINES = defines)
+
+print("Memory Definitions:")
+for definition in defines.items():
+    print(f"{definition[0]}\t= {definition[1]}")
+
+
+
+# Synthesize Design
+top_ast = gw_env.Command(
+    "top/top.json",
+    ["top.v", neorv32_wrapper],
+    "yosys $YOSYSFLAGS -p \"" +
+    " read_verilog $VFLAGS $_VINCFLAGS $_VDEFFLAGS $SOURCES;" +
+    " synth_ecp5 -top top -json $TARGET" +
+    "\""
+)
+gw_env.Depends(top_ast, memory_json)
+
+top_textcfg = gw_env.Ecp5Pnr(top_ast)
+
+top_bootrom_textcfg = gw_env.Command(
+    "top/top_bootrom.config",
+    [top_textcfg, init_files["ROM0"], bootrom],
+    "ecpbram -i ${SOURCES[0]} -o $TARGET -f ${SOURCES[1]} -t ${SOURCES[2]}"
+)
+
+top_bitstream = gw_env.Ecp5Bitstream(top_bootrom_textcfg)
+
+gw_env.DfuSuffix("top/top.dfu", top_bitstream)
+
+
