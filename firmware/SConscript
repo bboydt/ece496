@@ -67,6 +67,8 @@ fw_env = env.Clone(
     DFUSUFFIXFLAGS = "-v 1209 -p 5af1"
 )
 
+fw_env.Append(CPPSUFFIX = ".s")
+
 
 # Build Libraries
 
@@ -109,7 +111,7 @@ libs = {
 }
 
 for lib in libs:
-    if lib is None:
+    if libs[lib] is None:
         libs[lib] = SConscript(
             dirs = lib,
             variant_dir = "fw/" + lib,
@@ -118,7 +120,6 @@ for lib in libs:
                 "env": lib_env
             }
         )
-
 
 
 # Build Apps
@@ -130,20 +131,20 @@ apps = {
         "libs": []
     },
     
-#   "blinky": {
-#       "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-#       "libs": [ libs["neorv32"], libs["start"] ]
-#   },
+#    "blinky": {
+#        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+#        "libs": [ libs["neorv32"], libs["start"] ]
+#    },
     
-#   "blinky_rt": {
-#       "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-#       "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"] ]
-#   },
+#    "blinky_rt": {
+#        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+#        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"] ]
+#    },
     
-#   "m1": {
-#       "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-#       "libs": [ libs["neorv32"], libs["start"] ]
-#   }
+    "m1": {
+        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+        "libs": [ libs["neorv32"], libs["start"] ]
+    }
 }
 
 for app in apps:

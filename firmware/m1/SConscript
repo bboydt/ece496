@@ -8,3 +8,6 @@ m1_bin = env.Command(
     "$OBJCOPY -I elf32-little $SOURCE -O binary $TARGET",
     cmdstr = "objcopy $TARGET"
 )
+
+m1_dfu = env.DfuSuffix("m1.dfu", m1_bin)
+

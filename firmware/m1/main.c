@@ -172,19 +172,6 @@ static const uint32_t motor_states[9] =
     MOTOR(FRONT_LEFT , 0, 0),
 };
 
-static const char *motor_state_strs[9] =
-{
-    " * \n", 
-    " ^ \n", 
-    " /'\n", 
-    " ->\n", 
-    " \\.\n", 
-    " V \n", 
-    "./ \n", 
-    "<- \n", 
-    "'\\ \n", 
-};
-
 
 static const uint32_t decoded_inputs[16] =
 {
