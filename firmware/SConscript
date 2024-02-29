@@ -1,0 +1,172 @@
+# Builds firmware
+
+Import("*")
+
+import os
+
+# Create Firmware Environment
+
+gnu_flags = [
+    "-Wall",
+    "-march=rv32imc_zicsr_zifencei",
+    "-mabi=ilp32",
+    "-O0",
+    "-ffunction-sections",
+    "-fdata-sections",
+    #"-flto",
+    "-nostartfiles",
+    "-mno-fdiv",
+    "-mstrict-align",
+    "-mbranch-cost=10",
+    "-nostdlib",
+    "-Wl,--gc-sections",
+    "-g"
+]
+
+fw_env = env.Clone(
+    toolpath = [deps_dir.Dir("scons-dfu")],
+    tools = ["dfu"],
+
+    CC = "riscv64-unknown-elf-gcc",
+    AS = "riscv64-unknown-elf-gcc",
+    LINK = "riscv64-unknown-elf-gcc",
+    AR = "riscv64-unknown-elf-gcc-ar",
+    RANLIB = "riscv64-unknown-elf-gcc-ranlib",
+    OBJCOPY = "riscv64-unknown-elf-objcopy",
+
+    CPPPATH = [
+        Dir("shared/include").srcnode(),
+        deps_dir.Dir("rt/include").srcnode(),
+        deps_dir.Dir("rt/arch/riscv/include").srcnode(),
+        deps_dir.Dir("neorv32/sw/lib/include").srcnode()
+    ],
+    CPPDEFINES = {"RT_CYCLE_ENABLE": 0},
+    CCFLAGS = gnu_flags,
+    ASFLAGS = gnu_flags,
+    CFLAGS = ["-std=gnu17"],
+    CXXFLAGS = [
+        "-std = gnu++23",
+        "-Wno-missing-field-initializers",
+        "-fno-threadsafe-statics",
+        "-fno-exceptions",
+    ],
+    LINKFLAGS = gnu_flags,
+    LINKCOM = "$LINK -o ${TARGETS[0]} -Wl,-Map,${TARGETS[1]} $LINKFLAGS $SOURCES"
+    "$_LIBDIRFLAGS -Wl,--start-group $_LIBFLAGS -Wl,--end-group",
+    PROGSUFFIX = ".elf",
+
+    # printing
+    CCCOMSTR     = "cc $TARGET",
+    CXXCOMSTR    = "c++ $TARGET",
+    ASCOMSTR     = "as $TARGET",
+    ASPPCOMSTR   = "as $TARGET",
+    LINKCOMSTR   = "ld $TARGET",
+    ARCOMSTR     = "ar $TARGET",
+    RANLIBCOMSTR = "ranlib $TARGET",
+    
+    DFUSUFFIXFLAGS = "-v 1209 -p 5af1"
+)
+
+
+# Build Libraries
+
+lib_env = fw_env.Clone()
+
+libneorv32 = SConscript(
+    deps_dir.File("SConscript-neorv32"),
+    variant_dir = "fw/neorv32",
+    duplicate = False,
+    exports = {
+        "env": lib_env,
+        "neorv32_dir": deps_dir.Dir("neorv32")
+    }
+)
+
+librt = SConscript(
+    dirs = deps_dir.Dir("rt/src"),
+    variant_dir = "fw/rt",
+    duplicate = False,
+    exports = {
+        "env": lib_env
+    }
+)
+
+librt_riscv = SConscript(
+    dirs = deps_dir.Dir("rt/arch/riscv"),
+    variant_dir = "fw/rt/riscv",
+    duplicate = False,
+    exports = {
+        "env": lib_env
+    }
+)
+
+libs = {
+    "rt": librt,
+    "rt-riscv": librt_riscv,
+    "neorv32": libneorv32,
+    "start": None,
+    "start-rt": None
+}
+
+for lib in libs:
+    if lib is None:
+        libs[lib] = SConscript(
+            dirs = lib,
+            variant_dir = "fw/" + lib,
+            duplicate = False,
+            exports = {
+                "env": lib_env
+            }
+        )
+
+
+
+# Build Apps
+
+# each app needs an ld_scripts and libs value
+apps = {
+    "bootrom": {
+        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-boot.ld" ],
+        "libs": []
+    },
+    
+#   "blinky": {
+#       "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+#       "libs": [ libs["neorv32"], libs["start"] ]
+#   },
+    
+#   "blinky_rt": {
+#       "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+#       "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"] ]
+#   },
+    
+#   "m1": {
+#       "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+#       "libs": [ libs["neorv32"], libs["start"] ]
+#   }
+}
+
+for app in apps:
+    # add linker scripts to the linker flags and make the app an dependent of them
+    ld_scripts = [File(x).srcnode() for x in apps[app]["ld_scripts"]]
+    ld_flags = [f"-Wl,-T,{f.path}" for f in ld_scripts]
+    def ld_emitter(target, source, env):
+        map_file = os.path.splitext(str(target[0]))[0] + ".map"
+        env.Depends(target, ld_scripts)
+        return target + [map_file], source
+
+    app_env = fw_env.Clone()
+    app_env.Replace(LIBS = apps[app]["libs"])
+    app_env.Append(
+        LINKFLAGS = ld_flags,
+        PROGEMITTER = ld_emitter
+    )
+
+    SConscript(
+        dirs = app,
+        variant_dir = "fw/" + app,
+        duplicate = False,
+        exports = {
+            "env": app_env
+        }
+    )

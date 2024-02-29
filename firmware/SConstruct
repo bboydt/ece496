@@ -1,0 +1,27 @@
+# Builds Firmware
+
+import os
+
+root_dir = Dir("..")
+deps_dir = root_dir.Dir("deps")
+
+env = Environment(
+    ENV = {
+        "PATH": os.environ.get("PATH", ""),
+    }
+)
+
+if "TERM" in os.environ:
+    env["ENV"]["TERM"] = os.environ["TERM"]
+
+
+SConscript(
+    "SConscript",
+    variant_dir = root_dir.Dir("build"),
+    duplicate = False,
+    exports = {
+        "env": env,
+        "root_dir": root_dir,
+        "deps_dir": deps_dir,
+    }
+)

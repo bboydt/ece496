@@ -1,80 +1,3 @@
-.macro push_context
-    add sp, sp, -128
-    sw x31, (31*4)(sp)
-    sw x30, (30*4)(sp)
-    sw x29, (29*4)(sp)
-    sw x28, (28*4)(sp)
-    sw x27, (27*4)(sp)
-    sw x26, (26*4)(sp)
-    sw x25, (25*4)(sp)
-    sw x24, (24*4)(sp)
-    sw x23, (23*4)(sp)
-    sw x22, (22*4)(sp)
-    sw x21, (21*4)(sp)
-    sw x20, (20*4)(sp)
-    sw x19, (19*4)(sp)
-    sw x18, (18*4)(sp)
-    sw x17, (17*4)(sp)
-    sw x16, (16*4)(sp)
-    sw x15, (15*4)(sp)
-    sw x14, (14*4)(sp)
-    sw x13, (13*4)(sp)
-    sw x12, (12*4)(sp)
-    sw x11, (11*4)(sp)
-    sw x10, (10*4)(sp)
-    sw x9 , ( 9*4)(sp)
-    sw x8 , ( 8*4)(sp)
-    sw x7 , ( 7*4)(sp)
-    sw x6 , ( 6*4)(sp)
-    sw x5 , ( 5*4)(sp)
-    sw x4 , ( 4*4)(sp)
-    sw x3 , ( 3*4)(sp)
-    sw x1 , ( 2*4)(sp)
-    csrr t1, mstatus
-    csrr t0, mepc
-    sw t1 , ( 1*4)(sp)
-    sw t0 , ( 0*4)(sp)
-.endm
-
-.macro pop_context
-    lw t0 , ( 0*4)(sp)
-    lw t1 , ( 1*4)(sp)
-    csrw mepc, t0
-    csrw mstatus, t1
-    lw x1 , ( 2*4)(sp)
-    lw x3 , ( 3*4)(sp)
-    lw x4 , ( 4*4)(sp)
-    lw x5 , ( 5*4)(sp)
-    lw x6 , ( 6*4)(sp)
-    lw x7 , ( 7*4)(sp)
-    lw x8 , ( 8*4)(sp)
-    lw x9 , ( 9*4)(sp)
-    lw x10, (10*4)(sp)
-    lw x11, (11*4)(sp)
-    lw x12, (12*4)(sp)
-    lw x13, (13*4)(sp)
-    lw x14, (14*4)(sp)
-    lw x15, (15*4)(sp)
-    lw x16, (16*4)(sp)
-    lw x17, (17*4)(sp)
-    lw x18, (18*4)(sp)
-    lw x19, (19*4)(sp)
-    lw x20, (20*4)(sp)
-    lw x21, (21*4)(sp)
-    lw x22, (22*4)(sp)
-    lw x23, (23*4)(sp)
-    lw x24, (24*4)(sp)
-    lw x25, (25*4)(sp)
-    lw x26, (26*4)(sp)
-    lw x27, (27*4)(sp)
-    lw x28, (28*4)(sp)
-    lw x29, (29*4)(sp)
-    lw x30, (30*4)(sp)
-    lw x31, (31*4)(sp)
-    add sp, sp, 128
-.endm
-
-
 .text
 .org 0x0
 .global _reset_vector
@@ -86,116 +9,131 @@ _reset_vector:
 // controls flow of all interrupts
 .global _trap_handler
 _trap_handler:
+    
+    // store registers
+    add sp, sp, -(4*32)
 
-    // push context
-    add sp, sp, -128
-    sw x31, (31*4)(sp)
-    sw x30, (30*4)(sp)
-    sw x29, (29*4)(sp)
-    sw x28, (28*4)(sp)
-    sw x27, (27*4)(sp)
-    sw x26, (26*4)(sp)
-    sw x25, (25*4)(sp)
-    sw x24, (24*4)(sp)
-    sw x23, (23*4)(sp)
-    sw x22, (22*4)(sp)
-    sw x21, (21*4)(sp)
-    sw x20, (20*4)(sp)
-    sw x19, (19*4)(sp)
-    sw x18, (18*4)(sp)
-    sw x17, (17*4)(sp)
-    sw x16, (16*4)(sp)
-    sw x15, (15*4)(sp)
-    sw x14, (14*4)(sp)
-    sw x13, (13*4)(sp)
-    sw x12, (12*4)(sp)
-    sw x11, (11*4)(sp)
-    sw x10, (10*4)(sp)
-    sw x9 , ( 9*4)(sp)
-    sw x8 , ( 8*4)(sp)
-    sw x7 , ( 7*4)(sp)
-    sw x6 , ( 6*4)(sp)
-    sw x5 , ( 5*4)(sp)
-    sw x4 , ( 4*4)(sp)
-    sw x3 , ( 3*4)(sp)
-    sw x1 , ( 2*4)(sp)
-    csrr t0, mepc
+    sw x31, (4*31)(sp)
+    sw x30, (4*30)(sp)
+    sw x29, (4*29)(sp)
+    sw x28, (4*28)(sp)
+    sw x27, (4*27)(sp)
+    sw x26, (4*26)(sp)
+    sw x25, (4*25)(sp)
+    sw x24, (4*24)(sp)
+    sw x23, (4*23)(sp)
+    sw x22, (4*22)(sp)
+    sw x21, (4*21)(sp)
+    sw x20, (4*20)(sp)
+    sw x19, (4*19)(sp)
+    sw x18, (4*18)(sp)
+    sw x17, (4*17)(sp)
+    sw x16, (4*16)(sp)
+    sw x15, (4*15)(sp)
+    sw x14, (4*14)(sp)
+    sw x13, (4*13)(sp)
+    sw x12, (4*12)(sp)
+    sw x11, (4*11)(sp)
+    sw x10, (4*10)(sp)
+    sw x9 , (4*9 )(sp)
+    sw x8 , (4*8 )(sp)
+    sw x7 , (4*7 )(sp)
+    sw x6 , (4*6 )(sp)
+    sw x5 , (4*5 )(sp)
+    sw x4 , (4*4 )(sp)
+    sw x3 , (4*3 )(sp)
+    sw x1 , (4*2 )(sp)
+    
+    csrr t1, mepc
+    csrr t0, mstatus
 
-    li t1, 0x0000000b
-    csrr t2, mcause
-    bne t1, t2, 0f
-    add t0, t0, 4
-0:  
+    sw t1 , (4*1 )(sp)
+    sw t0 , (4*0 )(sp)
 
-    sw t0 , ( 0*4)(sp)
+    // get mcause for exception handler arg
+    // increment mepc for syscalls
+    csrr t0, mcause
+    li t2, 11
+    // if t0 == 1
+    bne t0, t2, 0f
+    add t1, t1, 4
+    sw t1, (4*1)(sp)
+0:
 
     // decode cause
-    csrr t0, mcause
 
-    li t1, 0xFFFFFFF0
-    and t1, t1, t0
+    la t3, vector_table
 
-    li t2, 0x00000000
+    // mask mcause
+    li t1, 0xFFFFFF00
+    and t2, t0, t1
+
+    // if (mcause & 0xFFFFFF00) == 0x00000000
+    li t1, 0x00000000
     bne t1, t2, 0f
-    li t1, (0*4*16) // offs of table
+    addi t3, t3, (0*4*16)
     j 1f
-0:  li t2, 0x80000000
+0:  // if (mcause & 0xFFFFFF00) == 0x00000000
+    li t1, 0x80000000
     bne t1, t2, 0f
-    li t1, (1*4*16) // offs of table
+    addi t3, t3, (1*4*16)
     j 1f
-0:  li t2, 0x80000010
-    bne t1, t2, 0f
-    li t2, (2*4*16) // offs of table
-    j 1f
-0:  call rt_trap
+0:  // if (mcause & 0xFFFFFF00) == 0x00000000
+    // assumed true
+    addi t3, t3, (2*4*16)
+1:
 
-1:  li t3, 0x0000000F
-    and t3, t3, t0
-    sll t3, t3, 2 // offs of handler
 
-    la t0, vector_table
-    add t0, t0, t2 // add offs of table
-    add t0, t0, t3 // add offs of handler
+    // get vector offset
+    li t1, 0xFF
+    and t2, t0, t1
+    slli t2, t2, 2
+    add t3, t3, t2
 
     // call handler
-    lw t0, (0)(t0)
-    jalr t0
+    lw t3, (0)(t3)
+    jalr t3
 
-    // pop context
-    lw t0 , ( 0*4)(sp)
-    csrw mepc, t0
 
-    lw x1 , ( 2*4)(sp)
-    lw x3 , ( 3*4)(sp)
-    lw x4 , ( 4*4)(sp)
-    lw x5 , ( 5*4)(sp)
-    lw x6 , ( 6*4)(sp)
-    lw x7 , ( 7*4)(sp)
-    lw x8 , ( 8*4)(sp)
-    lw x9 , ( 9*4)(sp)
-    lw x10, (10*4)(sp)
-    lw x11, (11*4)(sp)
-    lw x12, (12*4)(sp)
-    lw x13, (13*4)(sp)
-    lw x14, (14*4)(sp)
-    lw x15, (15*4)(sp)
-    lw x16, (16*4)(sp)
-    lw x17, (17*4)(sp)
-    lw x18, (18*4)(sp)
-    lw x19, (19*4)(sp)
-    lw x20, (20*4)(sp)
-    lw x21, (21*4)(sp)
-    lw x22, (22*4)(sp)
-    lw x23, (23*4)(sp)
-    lw x24, (24*4)(sp)
-    lw x25, (25*4)(sp)
-    lw x26, (26*4)(sp)
-    lw x27, (27*4)(sp)
-    lw x28, (28*4)(sp)
-    lw x29, (29*4)(sp)
-    lw x30, (30*4)(sp)
-    lw x31, (31*4)(sp)
-    add sp, sp, 128
+0:  // load registers
+    lw t1 , (4*1 )(sp)
+    lw t0 , (4*0 )(sp)
+    
+    csrw mepc, t1
+    csrs mstatus, t0
+
+    lw x31, (4*31)(sp)
+    lw x30, (4*30)(sp)
+    lw x29, (4*29)(sp)
+    lw x28, (4*28)(sp)
+    lw x27, (4*27)(sp)
+    lw x26, (4*26)(sp)
+    lw x25, (4*25)(sp)
+    lw x24, (4*24)(sp)
+    lw x23, (4*23)(sp)
+    lw x22, (4*22)(sp)
+    lw x21, (4*21)(sp)
+    lw x20, (4*20)(sp)
+    lw x19, (4*19)(sp)
+    lw x18, (4*18)(sp)
+    lw x17, (4*17)(sp)
+    lw x16, (4*16)(sp)
+    lw x15, (4*15)(sp)
+    lw x14, (4*14)(sp)
+    lw x13, (4*13)(sp)
+    lw x12, (4*12)(sp)
+    lw x11, (4*11)(sp)
+    lw x10, (4*10)(sp)
+    lw x9 , (4*9 )(sp)
+    lw x8 , (4*8 )(sp)
+    lw x7 , (4*7 )(sp)
+    lw x6 , (4*6 )(sp)
+    lw x5 , (4*5 )(sp)
+    lw x4 , (4*4 )(sp)
+    lw x3 , (4*3 )(sp)
+    lw x1 , (4*2 )(sp)
+
+    add sp, sp, (4*32)
 
     mret
 
@@ -255,11 +193,8 @@ _start:
     j 0b
 1:
 
-    // jump to _init
-    jal _init
-
-    // jump to rt_start
-    jal rt_start
+    // jump to main
+    jal main
 
 _exit_loop:
     j _exit_loop

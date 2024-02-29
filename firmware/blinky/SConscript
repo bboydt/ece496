@@ -1,16 +1,8 @@
 Import("*")
 
-linker_scripts = [
-    fw_shared_dir.File("ld/memory.ld"),
-    fw_shared_dir.File("ld/sections.ld")
-]
-linker_flags = env.CreateLinkerFlags(linker_scripts)
-this_env = env.Clone()
-this_env.Append(LINKFLAGS = linker_flags)
+blinky_elf = env.Program("blinky.elf", ["main.c"])
 
-blinky_elf = this_env.Program("blinky.elf", ["main.c"])
-
-blinky_bin = this_env.Command(
+blinky_bin = env.Command(
     "blinky.bin",
     [blinky_elf],
     "$OBJCOPY -I elf32-little $SOURCE -O binary $TARGET",

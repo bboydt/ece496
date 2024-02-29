@@ -1,20 +1,10 @@
 Import("*")
 
-linker_scripts = [
-    fw_shared_dir.File("ld/memory.ld"),
-    fw_shared_dir.File("ld/sections.ld")
-]
-linker_flags = env.CreateLinkerFlags(linker_scripts)
-this_env = env.Clone()
-this_env.Append(LINKFLAGS = linker_flags)
+m1_elf = env.Program("m1.elf", ["main.c"])
 
-m1_elf = this_env.Program("m1.elf", ["main.c"])
-
-m1_bin = this_env.Command(
+m1_bin = env.Command(
     "m1.bin",
     [m1_elf],
     "$OBJCOPY -I elf32-little $SOURCE -O binary $TARGET",
     cmdstr = "objcopy $TARGET"
 )
-
-Return("m1_bin")
