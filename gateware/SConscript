@@ -4,31 +4,23 @@ import json
 
 Import("*")
 
-# Create Gateware Environment
-yosys_flags = [
-    "-q",
-]
-
-nextpnr_flags = [ 
-    "--um5g-85k",
-    "--speed=8", 
-    "--package=CABGA381",
-    "--lpf=" + root_dir.File("gateware/board/butterstick/r1_0.pcf").path
-]
-
-ecppack_flags = [
-    "--compress",
-    "--freq=38.8",
-]
-
+# Gateware Environment
 gw_env = env.Clone(
     toolpath = [deps_dir.Dir("scons-fpga"), deps_dir.Dir("scons-dfu")],
     tools = ["yosys", "nextpnr", "trellis", "icarus", "dfu"],
     GHDL = "ghdl",
     VFLAGS = "-sv",
-    YOSYSFLAGS = yosys_flags,
-    PNRFLAGS = nextpnr_flags,
-    ECPPACKFLAGS = ecppack_flags,
+    YOSYSFLAGS = ["-q"],
+    PNRFLAGS = [
+        "--um5g-85k",
+        "--speed=8", 
+        "--package=CABGA381",
+        "--lpf=" + root_dir.File("gateware/board/butterstick/r1_0.pcf").path
+    ],
+    ECPPACKFLAGS = [
+        "--compress",
+        "--freq=38.8",
+    ],
     VPATH = [deps_dir.Dir("ecp5-soc/rtl").srcnode()],
     DFUSUFFIXFLAGS = "-v 1209 -p 5af1"
 )
@@ -85,9 +77,12 @@ for definition in defines.items():
 
 
 # Synthesize Design
+verilog_sources = Glob("*.v") + Glob("**/*.v") + Glob("board/butterstick/*.v")
+
+print(verilog_sources)
 top_ast = gw_env.Command(
     "top/top.json",
-    ["top.v", neorv32_wrapper],
+    verilog_sources,
     "yosys $YOSYSFLAGS -p \"" +
     " read_verilog $VFLAGS $_VINCFLAGS $_VDEFFLAGS $SOURCES;" +
     " synth_ecp5 -top top -json $TARGET" +

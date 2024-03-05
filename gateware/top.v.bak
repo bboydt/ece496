@@ -55,6 +55,18 @@ module top (
 
     assign reset_n = user_buttons[0];
 
+    // Encoders
+    //
+
+    reg [31:0] m0_pos;
+    encoder m0_enc(
+        .clk(sys_clk),
+        .rst(sys_clk),
+        .a(syzygy0_s[2]),
+        .b(syzygy0_s[3]),
+        .position(m0_pos)
+    );
+
     // PLL
     //
 
@@ -233,3 +245,19 @@ module top (
 
 endmodule
 
+
+module register_switch #(
+    parameter NS = 8 // number of slaves
+) (
+    input clk,
+    input rst,
+
+    `WISHBONE_SLAVE(wb),
+
+    output [NS-1:0] ready,
+    input [NS-1:0] valid,
+    inout [(32*NS)-1:0] data,
+);
+
+
+endmodule

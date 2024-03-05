@@ -14,10 +14,15 @@ AddOption("--no-gw",
           default = True,
           help = "Do not build gateware.")
 
+AddOption("--app",
+          dest = "app",
+          action = "store",
+          default = None,
+          help = "When specified, only this app will be built.")
+
 build_firmware = GetOption("firmware")
 build_gateware = GetOption("gateware")
-
-
+target_app = GetOption("app")
 
 # Paths
 root_dir = Dir(".")
@@ -45,6 +50,7 @@ if build_firmware:
             "env": env,
             "root_dir": root_dir,
             "deps_dir": deps_dir,
+            "target_app": target_app
         }
     )
 

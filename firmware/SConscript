@@ -145,6 +145,9 @@ apps = {
     }
 }
 
+if target_app is not None:
+    apps = {target_app: apps[target_app]}
+
 for app in apps:
     # add linker scripts to the linker flags and make the app an dependent of them
     ld_scripts = [File(x).srcnode() for x in apps[app]["ld_scripts"]]
