@@ -6,7 +6,7 @@ ENTRY(_reset_vector)
 
 SECTIONS
 {
-    .text :
+    .text : ALIGN(4)
     {
         . = ALIGN(__rx_region_align__);
         __rx_region__ = .;
@@ -27,7 +27,7 @@ SECTIONS
         KEEP(*(.vector_table.vector_table));
     } > FLASH
 
-    .rodata :
+    .rodata : ALIGN(4)
     {
         *(.rodata*)
         . = ALIGN(__ro_region_align__);
@@ -39,7 +39,7 @@ SECTIONS
         DEFINED(__mpu_align_power2__) ? (1 << LOG2CEIL(__ro_region_size__)) :
         DEFINED(__mpu_align_32__) ? 32 : 0;
 
-    .data :
+    .data : ALIGN(4)
     {
         . = ALIGN(__rw_region_align__);
         __rw_region__ = .;
@@ -47,7 +47,7 @@ SECTIONS
         *(.sdata*)
     } > SRAM AT> FLASH
 
-    .bss (NOLOAD) :
+    .bss (NOLOAD) : ALIGN(4)
     {
         *(.bss*)
         *(.sbss*)
@@ -60,14 +60,14 @@ SECTIONS
         DEFINED(__mpu_align_power2__) ? (1 << LOG2CEIL(__rw_region_size__)) :
         DEFINED(__mpu_align_32__) ? 32 : 0;
 
-    .priv_data :
+    .priv_data : ALIGN(4)
     {
         . = ALIGN(__priv_rw_region_align__);
         __priv_rw_region__ = .;
         *(.priv_data*)
     } > SRAM AT> FLASH
 
-    .priv_bss (NOLOAD) :
+    .priv_bss (NOLOAD) : ALIGN(4)
     {
         *(.priv_bss*)
         . = ALIGN(__priv_rw_region_align__);
@@ -79,7 +79,7 @@ SECTIONS
         DEFINED(__mpu_align_power2__) ? (1 << LOG2CEIL(__priv_rw_region_size__)) :
         DEFINED(__mpu_align_32__) ? 32 : 0;
 
-    .stack (NOLOAD) :
+    .stack (NOLOAD) : ALIGN(4)
     {
         *(.stack*)
     } > SRAM

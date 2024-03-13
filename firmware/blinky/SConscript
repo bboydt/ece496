@@ -1,12 +1,15 @@
 Import("*")
 
-blinky_elf = env.Program("blinky.elf", ["main.c"])
+name = "blinky"
+sources = ["main.c"]
 
-blinky_bin = env.Command(
-    "blinky.bin",
-    [blinky_elf],
+elf = env.Program(f"{name}.elf", ["main.c"])
+
+binary = env.Command(
+    f"{name}.bin",
+    [elf],
     "$OBJCOPY -I elf32-little $SOURCE -O binary $TARGET",
     cmdstr = "objcopy $TARGET"
 )
 
-Return("blinky_bin")
+dfu = env.DfuSuffix(f"{name}.dfu", binary)

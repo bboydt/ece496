@@ -1,0 +1,13 @@
+Import("*")
+
+m2_elf = env.Program("m2.elf", ["main.c"])
+
+m2_bin = env.Command(
+    "m2.bin",
+    [m2_elf],
+    "$OBJCOPY -I elf32-little $SOURCE -O binary $TARGET",
+    cmdstr = "objcopy $TARGET"
+)
+
+m2_dfu = env.DfuSuffix("m2.dfu", m2_bin)
+

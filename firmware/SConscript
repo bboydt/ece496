@@ -60,7 +60,7 @@ fw_env = env.Clone(
     CXXCOMSTR    = "c++ $TARGET",
     ASCOMSTR     = "as $TARGET",
     ASPPCOMSTR   = "as $TARGET",
-    LINKCOMSTR   = "ld $TARGET",
+    #LINKCOMSTR   = "ld $TARGET",
     ARCOMSTR     = "ar $TARGET",
     RANLIBCOMSTR = "ranlib $TARGET",
     
@@ -129,26 +129,28 @@ apps = {
         "libs": []
     },
     
-#    "blinky": {
-#        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-#        "libs": [ libs["neorv32"], libs["start"] ]
-#    },
-    
-#    "blinky_rt": {
-#        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-#        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"] ]
-#    },
-    
+    "blinky": {
+        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"] ]
+    },
+   
     "m1": {
         "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
         "libs": [ libs["neorv32"], libs["start"] ]
+    },
+
+    "m2": {
+        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+        "libs": [ libs["neorv32"], libs["start"] ]
     }
+
 }
 
 if target_app is not None:
     apps = {target_app: apps[target_app]}
 
 for app in apps:
+
     # add linker scripts to the linker flags and make the app an dependent of them
     ld_scripts = [File(x).srcnode() for x in apps[app]["ld_scripts"]]
     ld_flags = [f"-Wl,-T,{f.path}" for f in ld_scripts]
@@ -164,7 +166,7 @@ for app in apps:
         PROGEMITTER = ld_emitter
     )
 
-    SConscript(
+    app = SConscript(
         dirs = app,
         variant_dir = "app/" + app,
         duplicate = False,

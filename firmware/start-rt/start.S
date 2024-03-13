@@ -145,7 +145,7 @@ _trap_handler:
     j 1f
 0:  li t2, 0x80000010
     bne t1, t2, 0f
-    li t2, (2*4*16) // offs of table
+    li t1, (2*4*16) // offs of table
     j 1f
 0:  call rt_trap
 
@@ -154,7 +154,7 @@ _trap_handler:
     sll t3, t3, 2 // offs of handler
 
     la t0, vector_table
-    add t0, t0, t2 // add offs of table
+    add t0, t0, t1 // add offs of table
     add t0, t0, t3 // add offs of handler
 
     // call handler

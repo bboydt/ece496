@@ -33,11 +33,24 @@ module top (
 
     // Spiflash
 
+    // Slow Clock (1kHz)    
+    reg slow_clk;
+    reg [31:0] slow_clk_counter;
+    always @(posedge clk30) begin
+        if (slow_clk_counter >= 300) begin
+            slow_clk_counter <= 0;
+            slow_clk <= ~slow_clk;
+        end else begin
+            slow_clk_counter <= slow_clk_counter + 1;
+        end
+    end
+
     // SoC
     soc soc0 (
         .sys_clk(sys_clk),
         .sys_rst(sys_rst),
         .vccio_clk(clk30),
+        .led_clk(slow_clk),
         .user_leds_en(user_leds_en),
         .user_leds_color(user_leds_color),
         .vccio_en(vccio_en),
@@ -47,6 +60,8 @@ module top (
         .spiflash_miso(spiflash_miso),
         .uart0_rx(syzygy0[0]),
         .uart0_tx(syzygy0[1]),
+        .enc_a({syzygy0[20], syzygy0[22], syzygy0[24], syzygy0[26]}),
+        .enc_b({syzygy0[21], syzygy0[23], syzygy0[25], syzygy0[27]}),
         .jtag_tck(syzygy0[2]),
         .jtag_tdi(syzygy0[4]),
         .jtag_tdo(syzygy0[6]),

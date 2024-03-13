@@ -5,34 +5,16 @@
 #include <rt/tick.h>
 
 #include "common.h"
-
-static void print_startup_message()
-{
-    neorv32_uart0_puts("\n");
-    neorv32_uart0_puts("           __..-''\"'\"'-=.+\n");
-    neorv32_uart0_puts("     __..''      __.-' R |\n");
-    neorv32_uart0_puts("    [---......+'' ./  E  |\n");
-    neorv32_uart0_puts("    |\\       /| ./  T  ./|\n");
-    neorv32_uart0_puts("    | \\     /'|/   T ./  ]\n");
-    neorv32_uart0_puts("    | /'---'\\ |  U  / ..''\n");
-    neorv32_uart0_puts("    [/       \\| B ./-'    \n");
-    neorv32_uart0_puts("    \"\"....____V_.'\"       \n");
-    neorv32_uart0_puts("\n");
-    neorv32_uart0_puts("Howdy sailor!!\n");
-    neorv32_uart0_puts("\n");
-}
-
+#include "leds.h"
 
 static void blinky()
 {
     unsigned long last_wake_tick = 0;
-    const unsigned long sleep_period = 50;
+    const unsigned long sleep_period = 500;
 
-    neorv32_gpio_pin_set(3);
     for (;;)
     {
-        //neorv32_uart0_puts("blinky!!\n");
-        neorv32_gpio_pin_toggle(4);
+        LEDS->led[0] ^= 0x00001F1F;
         rt_task_sleep_periodic(&last_wake_tick, sleep_period);
     }
 }
@@ -41,9 +23,5 @@ RT_TASK(blinky, 1024, 1);
 
 void mcu_init(void)
 {
-    neorv32_gpio_port_set(0);
-    // setup uart0
-    neorv32_uart0_setup(115200, ~0); 
-    //neorv32_cpu_csr_set(CSR_MIE, 1 << UART0_RX_FIRQ_ENABLE);
-    //print_startup_message();
+    LEDS->led[0] = 0x00000000;
 }
