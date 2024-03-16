@@ -141,7 +141,7 @@ apps = {
 
     "m2": {
         "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-        "libs": [ libs["neorv32"], libs["start"] ]
+        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"] ]
     }
 
 }

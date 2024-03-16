@@ -1,241 +1,91 @@
 #include <neorv32.h>
 
+#include <soc/leds.h>
+#include <soc/encoders.h>
+
+#include <rt/task.h>
+#include <rt/stack.h>
+
 #include <stdint.h>
-#include <stdbool.h>
-#include <stdarg.h>
+#include <stdio.h>
 
-#include "ascii.h"
-#include "soc/leds.h"
-
-// Printing
+//
+// Heartbeat Task
 //
 
-#define CTRL_UART  NEORV32_UART0
-#define DEBUG_UART NEORV32_UART0
+// Blinkys an LED at 1Hz
 
-#define CTRL_UART_BAUD 115200
-#define DEBUG_UART_BAUD 115200
-
-#define stdin CTRL_UART
-#define stdout DEBUG_UART
-#define stderr DEBUG_UART
-
-#define fprintf(uart, fmt, ...) neorv32_uart_printf(uart, fmt, ## __VA_ARGS__)
-#define printf(fmt, ...) fprintf(stdout, fmt, ## __VA_ARGS__)
-
-#define fputs(uart, str) neorv32_uart_puts(uart, str)
-
-#define print_error(fmt, ...) fprintf(stderr, ASCII_RED "[error]" ASCII_RESET " " fmt "\n", ## __VA_ARGS__) 
-#define print_warn(fmt, ...)  fprintf(stderr, ASCII_YELLOW "[warn]" ASCII_RESET "  " fmt "\n", ## __VA_ARGS__) 
-#define print_log(fmt, ...)   fprintf(stderr, "[info]  " fmt "\n", ## __VA_ARGS__)
-
-#define getc(uart) neorv32_uart_getc(uart)
-
-// Motor Control
-//
-
-// This is how the car is modeled.
-// The [\\] and [//] are top down views of the wheels. 
-// The slashes match the rollers.
-//
-//          \ /
-//         LIDAR
-//     [\\]=====[//]
-//      || 3   0 ||
-//      ||  CAR  ||
-//      || 2   1 ||
-//     [//]=====[\\]
-// Y     ||%BOX%||
-// ^     ||%BOX%||
-// |
-// + -- > X
-
-
-#define ASCII_UP    'w'
-#define ASCII_DOWN  's'
-#define ASCII_RIGHT 'd'
-#define ASCII_LEFT  'a'
-
-static uint32_t input = 0;
-
-void uart0_rx_handler()
+static void heartbeat(void)
 {
-    neorv32_gpio_pin_set(1);
-    // store input
-    char c = getc(stdin);
-    switch (c)
+    uint32_t last_wake_tick = 0;
+    const uint32_t sleep_period = 50;
+
+    for (;;)
     {
-        case ASCII_UP:
-            input |= 0b1000;
-            break;
-        case ASCII_DOWN: 
-            input |= 0b0100;
-            break;
-        case ASCII_RIGHT:
-            input |= 0b0010;
-            break;
-        case ASCII_LEFT:
-            input |= 0b0001;
-            break;
-        default: 
-            neorv32_uart_putc(DEBUG_UART, c);
-            break;
+        LEDS->led[0] ^= 0x00000F0F;
+        rt_task_sleep_periodic(&last_wake_tick, sleep_period);
     }
-    
-    // bit we clear depends on which uart we're using
-    neorv32_cpu_csr_clr(CSR_MIP, (1 << 2) << 16); 
 }
 
-static inline void uart_init(void)
+RT_TASK(heartbeat, RT_STACK_MIN, RT_TASK_PRIORITY_MIN);
+
+//
+// Traction Control
+//
+
+#define ENCODER_RESOLUTION 90
+#define MEASURE_SPEED_PERIOD 50
+
+static int32_t motor_positions[4] = {0}; // raw encoder values
+static uint32_t motor_speeds[4]; // rotations per second
+
+static void measure_speed(void)
 {
-    neorv32_uart_setup(CTRL_UART,  CTRL_UART_BAUD, ~1);
-    //@todo reenable this if CTRL_UART != DEBUG_UART
-    //neorv32_uart_setup(DEBUG_UART, DEBUG_UART_BAUD, ~0);
-    
-    // bit we clear depends on which uart we're using
-    neorv32_cpu_csr_set(CSR_MIE, (1 << 2) << 16);
-}
+    uint32_t last_wake_tick = 0;
 
-
-#define FRONT_RIGHT 0
-#define BACK_RIGHT  1
-#define BACK_LEFT   2
-#define FRONT_LEFT  3
-
-#define MOTOR_GPIO_OFFS 7
-#define MOTOR(n, en, dir) ((((dir) << 1) | (en)) << (2*(n)))
-
-static const uint32_t motor_states[9] =
-{
-    // (XX, YY)
-    
-    // 0
-    // ( 0,  0)
-    MOTOR(FRONT_RIGHT, 0, 0) |
-    MOTOR(BACK_RIGHT , 0, 0) |
-    MOTOR(BACK_LEFT  , 0, 0) |
-    MOTOR(FRONT_LEFT , 0, 0),
-    
-    // 1
-    // ( 0, +1)
-    MOTOR(FRONT_RIGHT, 1, 1) |
-    MOTOR(BACK_RIGHT , 1, 1) |
-    MOTOR(BACK_LEFT  , 1, 1) |
-    MOTOR(FRONT_LEFT , 1, 1),
-    
-    // 2
-    // (+1, +1)
-    MOTOR(FRONT_RIGHT, 0, 0) |
-    MOTOR(BACK_RIGHT , 1, 1) |
-    MOTOR(BACK_LEFT  , 0, 0) |
-    MOTOR(FRONT_LEFT , 1, 1),
-    
-    // 3
-    // (+1,  0)
-    MOTOR(FRONT_RIGHT, 1, 0) |
-    MOTOR(BACK_RIGHT , 1, 1) |
-    MOTOR(BACK_LEFT  , 1, 0) |
-    MOTOR(FRONT_LEFT , 1, 1),
-    
-    // 4
-    // (+1, -1)
-    MOTOR(FRONT_RIGHT, 1, 0) |
-    MOTOR(BACK_RIGHT , 0, 0) |
-    MOTOR(BACK_LEFT  , 1, 0) |
-    MOTOR(FRONT_LEFT , 0, 0),
-    
-    // 5
-    // ( 0, -1)
-    MOTOR(FRONT_RIGHT, 1, 0) |
-    MOTOR(BACK_RIGHT , 1, 0) |
-    MOTOR(BACK_LEFT  , 1, 0) |
-    MOTOR(FRONT_LEFT , 1, 0),
-    
-    // 6
-    // (-1, -1)
-    MOTOR(FRONT_RIGHT, 0, 0) |
-    MOTOR(BACK_RIGHT , 1, 0) |
-    MOTOR(BACK_LEFT  , 0, 0) |
-    MOTOR(FRONT_LEFT , 1, 0),
-    
-    // 7
-    // (-1,  0)
-    MOTOR(FRONT_RIGHT, 1, 1) |
-    MOTOR(BACK_RIGHT , 1, 0) |
-    MOTOR(BACK_LEFT  , 1, 1) |
-    MOTOR(FRONT_LEFT , 1, 0),
-
-    // 8
-    // (-1, +1)
-    MOTOR(FRONT_RIGHT, 1, 1) |
-    MOTOR(BACK_RIGHT , 0, 0) |
-    MOTOR(BACK_LEFT  , 1, 1) |
-    MOTOR(FRONT_LEFT , 0, 0),
-};
-
-
-static const uint32_t decoded_inputs[16] =
-{
-    0, 7, 3, 0, 5, 6, 4, 5, 1, 8, 2, 1, 0, 7, 3, 0
-};
-
-void mti_handler()
-{
-    // decode input
-    uint32_t decoded_input = decoded_inputs[input];
-    neorv32_gpio_pin_clr(1);
-
-    //neorv32_uart_puts(DEBUG_UART, motor_state_strs[decoded_input]);
-
-    // update motor state
-    uint32_t motor_state = motor_states[decoded_input];
-    uint32_t prev_gpio_state = NEORV32_GPIO->OUTPUT_LO & ~(0x7FBC);
-    NEORV32_GPIO->OUTPUT_LO = prev_gpio_state | (motor_state << MOTOR_GPIO_OFFS) | (input << 2);
-    input = 0;
-
-    // blink led
-    static uint32_t tick_count;
-    if (tick_count++ % 1000 == 0)
+    for (;;)
     {
-        static int led = 0;
-        LEDS->led[led] = 0x00000000;
-        led = (led + 1) % 7;
-        LEDS->led[led] = 0x000000FF;
+        for (int i = 0; i < 4; i++)
+        {
+            int32_t position = ENCODERS->positions[i];
+            int32_t delta = 0x7FFFFFFF & (uint32_t)(position - motor_positions[i]);
+            
+            motor_speeds[i] = delta;
+            motor_positions[i] = position;
+        }
+
+        rt_task_sleep_periodic(&last_wake_tick, MEASURE_SPEED_PERIOD);
+    }
+}
+RT_TASK(measure_speed, RT_STACK_MIN, RT_TASK_PRIORITY_MAX);
+
+static void report_speeds(void)
+{
+    uint32_t last_wake_tick = 0;
+
+    uint32_t t = 0;
+    for (;;)
+    {
+        fprintf(stdout, "[%u s] motor report\n", t++);
+        for (int i = 0; i < 4; i++)
+        {
+            fprintf(stdout, "motor[%u]\n\tpos: %i\n\tspeed: %u\n", i, motor_positions[i], motor_speeds[i]);
+        }
+        rt_task_sleep_periodic(&last_wake_tick, 50);
+    }
+}
+RT_TASK(report_speeds, RT_STACK_MIN, RT_TASK_PRIORITY_MIN + 1);
+
+//
+// Initialization
+//
+
+void mcu_init(void)
+{
+    for (int i = 0; i < 7; i++)
+    {
+        LEDS->led[i] = 0x00000000;
     }
 
-    // update timecmp
-    neorv32_mtime_set_timecmp(neorv32_mtime_get_timecmp() + (NEORV32_SYSINFO->CLK / 1000));
-}
-
-static inline void mtime_init(void)
-{
-    // set mtime to fire in 1ms
-    neorv32_mtime_set_timecmp(neorv32_mtime_get_time() + (NEORV32_SYSINFO->CLK / 1000));
-    neorv32_cpu_csr_set(CSR_MIE, 1 << CSR_MIE_MTIE);
-}
-
-static inline void gpio_init(void)
-{
-    NEORV32_GPIO->OUTPUT_LO = 0;
-}
-
-
-// Entry Point
-//
-
-int main(void)
-{
-    mtime_init();
-    uart_init();
-    gpio_init();
-
-    // enabled interrupts
-    neorv32_cpu_csr_set(CSR_MSTATUS, 1 << CSR_MSTATUS_MIE);
-
-    // enable advertising
-    print_error("This is an error.");
-    print_warn("This is a warning.");
-    print_log("This is a log.");
-
-    for (;;);
+    neorv32_uart_setup(stdout, 115200, ~0);
 }

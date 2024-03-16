@@ -129,7 +129,7 @@ module soc (
         .NM(1),
         .NS(4),
         .SA({`ROM0_ADDR, `RAM0_ADDR, 32'hF0000000, 32'hF0000100}),
-        .SM({`ROM0_MASK, `ROM0_MASK, 32'h0000000F, 32'h000000FF})
+        .SM({`ROM0_MASK, `RAM0_MASK, 32'h0000000F, 32'h000000FF})
     ) wbx0 (
         .sys_clk(sys_clk),
         .sys_rst(sys_rst),
