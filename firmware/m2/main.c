@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 #include "ascii.h"
-#include "leds.h"
+#include "soc/leds.h"
 
 // Printing
 //

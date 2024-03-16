@@ -60,7 +60,7 @@ fw_env = env.Clone(
     CXXCOMSTR    = "c++ $TARGET",
     ASCOMSTR     = "as $TARGET",
     ASPPCOMSTR   = "as $TARGET",
-    #LINKCOMSTR   = "ld $TARGET",
+    INKCOMSTR   = "ld $TARGET",
     ARCOMSTR     = "ar $TARGET",
     RANLIBCOMSTR = "ranlib $TARGET",
     

@@ -1,218 +1,30 @@
-.macro push_context
-    add sp, sp, -128
-    sw x31, (31*4)(sp)
-    sw x30, (30*4)(sp)
-    sw x29, (29*4)(sp)
-    sw x28, (28*4)(sp)
-    sw x27, (27*4)(sp)
-    sw x26, (26*4)(sp)
-    sw x25, (25*4)(sp)
-    sw x24, (24*4)(sp)
-    sw x23, (23*4)(sp)
-    sw x22, (22*4)(sp)
-    sw x21, (21*4)(sp)
-    sw x20, (20*4)(sp)
-    sw x19, (19*4)(sp)
-    sw x18, (18*4)(sp)
-    sw x17, (17*4)(sp)
-    sw x16, (16*4)(sp)
-    sw x15, (15*4)(sp)
-    sw x14, (14*4)(sp)
-    sw x13, (13*4)(sp)
-    sw x12, (12*4)(sp)
-    sw x11, (11*4)(sp)
-    sw x10, (10*4)(sp)
-    sw x9 , ( 9*4)(sp)
-    sw x8 , ( 8*4)(sp)
-    sw x7 , ( 7*4)(sp)
-    sw x6 , ( 6*4)(sp)
-    sw x5 , ( 5*4)(sp)
-    sw x4 , ( 4*4)(sp)
-    sw x3 , ( 3*4)(sp)
-    sw x1 , ( 2*4)(sp)
-    csrr t1, mstatus
-    csrr t0, mepc
-    sw t1 , ( 1*4)(sp)
-    sw t0 , ( 0*4)(sp)
-.endm
-
-.macro pop_context
-    lw t0 , ( 0*4)(sp)
-    lw t1 , ( 1*4)(sp)
-    csrw mepc, t0
-    csrw mstatus, t1
-    lw x1 , ( 2*4)(sp)
-    lw x3 , ( 3*4)(sp)
-    lw x4 , ( 4*4)(sp)
-    lw x5 , ( 5*4)(sp)
-    lw x6 , ( 6*4)(sp)
-    lw x7 , ( 7*4)(sp)
-    lw x8 , ( 8*4)(sp)
-    lw x9 , ( 9*4)(sp)
-    lw x10, (10*4)(sp)
-    lw x11, (11*4)(sp)
-    lw x12, (12*4)(sp)
-    lw x13, (13*4)(sp)
-    lw x14, (14*4)(sp)
-    lw x15, (15*4)(sp)
-    lw x16, (16*4)(sp)
-    lw x17, (17*4)(sp)
-    lw x18, (18*4)(sp)
-    lw x19, (19*4)(sp)
-    lw x20, (20*4)(sp)
-    lw x21, (21*4)(sp)
-    lw x22, (22*4)(sp)
-    lw x23, (23*4)(sp)
-    lw x24, (24*4)(sp)
-    lw x25, (25*4)(sp)
-    lw x26, (26*4)(sp)
-    lw x27, (27*4)(sp)
-    lw x28, (28*4)(sp)
-    lw x29, (29*4)(sp)
-    lw x30, (30*4)(sp)
-    lw x31, (31*4)(sp)
-    add sp, sp, 128
-.endm
-
-
 .text
+
+// entry point from the bootrom
 .org 0x0
 .global _reset_vector
 _reset_vector:
-    j _start
-
-
-.org 0x20
-// controls flow of all interrupts
-.global _trap_handler
-_trap_handler:
-
-    // push context
-    add sp, sp, -128
-    sw x31, (31*4)(sp)
-    sw x30, (30*4)(sp)
-    sw x29, (29*4)(sp)
-    sw x28, (28*4)(sp)
-    sw x27, (27*4)(sp)
-    sw x26, (26*4)(sp)
-    sw x25, (25*4)(sp)
-    sw x24, (24*4)(sp)
-    sw x23, (23*4)(sp)
-    sw x22, (22*4)(sp)
-    sw x21, (21*4)(sp)
-    sw x20, (20*4)(sp)
-    sw x19, (19*4)(sp)
-    sw x18, (18*4)(sp)
-    sw x17, (17*4)(sp)
-    sw x16, (16*4)(sp)
-    sw x15, (15*4)(sp)
-    sw x14, (14*4)(sp)
-    sw x13, (13*4)(sp)
-    sw x12, (12*4)(sp)
-    sw x11, (11*4)(sp)
-    sw x10, (10*4)(sp)
-    sw x9 , ( 9*4)(sp)
-    sw x8 , ( 8*4)(sp)
-    sw x7 , ( 7*4)(sp)
-    sw x6 , ( 6*4)(sp)
-    sw x5 , ( 5*4)(sp)
-    sw x4 , ( 4*4)(sp)
-    sw x3 , ( 3*4)(sp)
-    sw x1 , ( 2*4)(sp)
-    csrr t0, mepc
-
-    li t1, 0x0000000b
-    csrr t2, mcause
-    bne t1, t2, 0f
-    add t0, t0, 4
-0:  
-
-    sw t0 , ( 0*4)(sp)
-
-    // decode cause
-    csrr t0, mcause
-
-    li t1, 0xFFFFFFF0
-    and t1, t1, t0
-
-    li t2, 0x00000000
-    bne t1, t2, 0f
-    li t1, (0*4*16) // offs of table
-    j 1f
-0:  li t2, 0x80000000
-    bne t1, t2, 0f
-    li t1, (1*4*16) // offs of table
-    j 1f
-0:  li t2, 0x80000010
-    bne t1, t2, 0f
-    li t1, (2*4*16) // offs of table
-    j 1f
-0:  call rt_trap
-
-1:  li t3, 0x0000000F
-    and t3, t3, t0
-    sll t3, t3, 2 // offs of handler
-
-    la t0, vector_table
-    add t0, t0, t1 // add offs of table
-    add t0, t0, t3 // add offs of handler
-
-    // call handler
-    lw t0, (0)(t0)
-    jalr t0
-
-    // pop context
-    lw t0 , ( 0*4)(sp)
-    csrw mepc, t0
-
-    lw x1 , ( 2*4)(sp)
-    lw x3 , ( 3*4)(sp)
-    lw x4 , ( 4*4)(sp)
-    lw x5 , ( 5*4)(sp)
-    lw x6 , ( 6*4)(sp)
-    lw x7 , ( 7*4)(sp)
-    lw x8 , ( 8*4)(sp)
-    lw x9 , ( 9*4)(sp)
-    lw x10, (10*4)(sp)
-    lw x11, (11*4)(sp)
-    lw x12, (12*4)(sp)
-    lw x13, (13*4)(sp)
-    lw x14, (14*4)(sp)
-    lw x15, (15*4)(sp)
-    lw x16, (16*4)(sp)
-    lw x17, (17*4)(sp)
-    lw x18, (18*4)(sp)
-    lw x19, (19*4)(sp)
-    lw x20, (20*4)(sp)
-    lw x21, (21*4)(sp)
-    lw x22, (22*4)(sp)
-    lw x23, (23*4)(sp)
-    lw x24, (24*4)(sp)
-    lw x25, (25*4)(sp)
-    lw x26, (26*4)(sp)
-    lw x27, (27*4)(sp)
-    lw x28, (28*4)(sp)
-    lw x29, (29*4)(sp)
-    lw x30, (30*4)(sp)
-    lw x31, (31*4)(sp)
-    add sp, sp, 128
-
-    mret
-
-
-
-// entry point from the bootrom
-_start:
     // disable interrupts
-    li t0, 8
-    csrc mstatus, t0
+    csrc mstatus, 8
 
     // set stack pointer
     la sp, __stack_pointer
 
     // set trap vector
-    la t0, _trap_handler
+    la t0, vector_table
+    ori t0, t0, 1
     csrw mtvec, t0
+
+    // clear leds
+    li t0, 0xF0000100
+    li t1, 0x00000000
+    sw t1, 0(t0)
+    sw t1, 4(t0)
+    sw t1, 8(t0)
+    sw t1, 12(t0)
+    sw t1, 16(t0)
+    sw t1, 20(t0)
+    sw t1, 24(t0)
 
     // copy sections
     la t0, __copy_table__
