@@ -22,7 +22,9 @@ gw_env = env.Clone(
         "--freq=38.8",
     ],
     VPATH = [deps_dir.Dir("ecp5-soc/rtl").srcnode()],
-    DFUSUFFIXFLAGS = "-v 1209 -p 5af1"
+    DFUSUFFIXFLAGS = "-v 1209 -p 5af1",
+
+    DFUSUFFIXCOMSTR = "dfu-suffix $TARGET"
 )
 
 
@@ -70,23 +72,21 @@ for addr_range in memory_config:
 
 gw_env.Append(VDEFINES = defines)
 
-print("Memory Definitions:")
-for definition in defines.items():
-    print(f"{definition[0]}\t= {definition[1]}")
-
 
 
 # Synthesize Design
 verilog_sources = Glob("*.v") + Glob("**/*.v") + Glob("board/butterstick/*.v")
 
-print(verilog_sources)
 top_ast = gw_env.Command(
     "top/top.json",
     verilog_sources,
-    "yosys $YOSYSFLAGS -p \"" +
-    " read_verilog $VFLAGS $_VINCFLAGS $_VDEFFLAGS $SOURCES;" +
-    " synth_ecp5 -top top -json $TARGET" +
-    "\""
+    Action(
+        "yosys $YOSYSFLAGS -p \"" +
+        " read_verilog $VFLAGS $_VINCFLAGS $_VDEFFLAGS $SOURCES;" +
+        " synth_ecp5 -top top -json $TARGET" +
+        "\"",
+        "yosys $TARGET"
+    )
 )
 gw_env.Depends(top_ast, memory_json)
 
@@ -95,7 +95,10 @@ top_textcfg = gw_env.Ecp5Pnr(top_ast)
 top_bootrom_textcfg = gw_env.Command(
     "top/top_bootrom.config",
     [top_textcfg, init_files["ROM0"], bootrom],
-    "ecpbram -i ${SOURCES[0]} -o $TARGET -f ${SOURCES[1]} -t ${SOURCES[2]}"
+    Action(
+        "ecpbram -i ${SOURCES[0]} -o $TARGET -f ${SOURCES[1]} -t ${SOURCES[2]}",
+        "nextpnr-ecp5 $TARGET"
+    )
 )
 
 top_bitstream = gw_env.Ecp5Bitstream(top_bootrom_textcfg)

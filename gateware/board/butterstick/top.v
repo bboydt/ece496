@@ -34,15 +34,12 @@ module top (
     // Spiflash
 
     // Slow Clock (1kHz)    
-    reg slow_clk;
-    reg [31:0] slow_clk_counter;
+    reg [31:0] clk_divider;
+    wire slow_clk;
+    assign slow_clk = clk_divider[7];
+
     always @(posedge clk30) begin
-        if (slow_clk_counter >= 300) begin
-            slow_clk_counter <= 0;
-            slow_clk <= ~slow_clk;
-        end else begin
-            slow_clk_counter <= slow_clk_counter + 1;
-        end
+        clk_divider <= clk_divider + 1;
     end
 
     // SoC
@@ -60,8 +57,9 @@ module top (
         .spiflash_miso(spiflash_miso),
         .uart0_rx(syzygy0[0]),
         .uart0_tx(syzygy0[1]),
-        .enc_a({syzygy0[20], syzygy0[22], syzygy0[24], syzygy0[26]}),
-        .enc_b({syzygy0[21], syzygy0[23], syzygy0[25], syzygy0[27]}),
+        .enc_a({syzygy0[26], syzygy0[24], syzygy0[22], syzygy0[20]}),
+        .enc_b({syzygy0[27], syzygy0[25], syzygy0[23], syzygy0[21]}),
+        .pwms({syzygy0[18], syzygy0[16], syzygy0[14], syzygy0[12]}),
         .jtag_tck(syzygy0[2]),
         .jtag_tdi(syzygy0[4]),
         .jtag_tdo(syzygy0[6]),

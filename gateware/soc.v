@@ -3,6 +3,15 @@
 `include "ecp5_soc/cores/bram.v"
 `include "ecp5_soc/cores/rom.v"
 
+`define ENCS0_ADDR 32'hF0000000
+`define ENCS0_MASK 32'h0000000F
+
+`define LEDS0_ADDR 32'hF0000100
+`define LEDS0_MASK 32'h000000FF
+
+`define PWMS0_ADDR 32'hF0000200
+`define PWMS0_MASK 32'hF00000FF
+
 module soc (
     input sys_clk,
     input sys_rst,
@@ -28,6 +37,8 @@ module soc (
     input [3:0] enc_a,
     input [3:0] enc_b,
 
+    output [3:0] pwms,
+
     input jtag_tck,
     input jtag_tdi,
     output jtag_tdo,
@@ -43,6 +54,17 @@ module soc (
         .led_clk(led_clk),
         .leds(user_leds_en),
         .rgb_sel(user_leds_color)
+    );
+
+    // PWMs
+    `WISHBONE_WIRES(pwms0);
+    pwms #(
+        .COUNT(4)
+    ) pwms0 (
+        .clk(sys_clk),
+        .rst(sys_rst),
+        `WISHBONE_PORT(wb, pwms0),
+        .pwms(pwms)
     );
 
     // Processor
@@ -115,21 +137,21 @@ module soc (
     );
 
     // Encoders
-    `WISHBONE_WIRES(enc0);
-    encoders_core enc0 (
+    `WISHBONE_WIRES(encs0);
+    encoders_core encs0 (
         .clk(sys_clk),
         .rst(sys_rst),
         .a(enc_a),
         .b(enc_b),
-        `WISHBONE_PORT(wb, enc0)
+        `WISHBONE_PORT(wb, encs0)
     );
 
     // Wishbone Crossbar
     wishbone_crossbar #(
         .NM(1),
-        .NS(4),
-        .SA({`ROM0_ADDR, `RAM0_ADDR, 32'hF0000000, 32'hF0000100}),
-        .SM({`ROM0_MASK, `RAM0_MASK, 32'h0000000F, 32'h000000FF})
+        .NS(5),
+        .SA({`ROM0_ADDR, `RAM0_ADDR, `ENCS0_ADDR, `LEDS0_ADDR, `PWMS0_ADDR}),
+        .SM({`ROM0_MASK, `RAM0_MASK, `ENCS0_MASK, `LEDS0_MASK, `PWMS0_MASK})
     ) wbx0 (
         .sys_clk(sys_clk),
         .sys_rst(sys_rst),
@@ -145,16 +167,16 @@ module soc (
         .masters_ack ({cpu0_ack }),
         .masters_err ({cpu0_err }),
 
-        .slaves_cyc ({rom0_cyc , ram0_cyc , enc0_cyc , leds0_cyc }),
-        .slaves_stb ({rom0_stb , ram0_stb , enc0_stb , leds0_stb }),
-        .slaves_we  ({rom0_we  , ram0_we  , enc0_we  , leds0_we  }),
-        .slaves_tag ({rom0_tag , ram0_tag , enc0_tag , leds0_tag }),
-        .slaves_sel ({rom0_sel , ram0_sel , enc0_sel , leds0_sel }),
-        .slaves_adr ({rom0_adr , ram0_adr , enc0_adr , leds0_adr }),
-        .slaves_mosi({rom0_mosi, ram0_mosi, enc0_mosi, leds0_mosi}),
-        .slaves_miso({rom0_miso, ram0_miso, enc0_miso, leds0_miso}),
-        .slaves_ack ({rom0_ack , ram0_ack , enc0_ack , leds0_ack }),
-        .slaves_err ({rom0_err , ram0_err , enc0_err , leds0_err }),
+        .slaves_cyc ({rom0_cyc , ram0_cyc , encs0_cyc , leds0_cyc , pwms0_cyc }),
+        .slaves_stb ({rom0_stb , ram0_stb , encs0_stb , leds0_stb , pwms0_stb }),
+        .slaves_we  ({rom0_we  , ram0_we  , encs0_we  , leds0_we  , pwms0_we  }),
+        .slaves_tag ({rom0_tag , ram0_tag , encs0_tag , leds0_tag , pwms0_tag }),
+        .slaves_sel ({rom0_sel , ram0_sel , encs0_sel , leds0_sel , pwms0_sel }),
+        .slaves_adr ({rom0_adr , ram0_adr , encs0_adr , leds0_adr , pwms0_adr }),
+        .slaves_mosi({rom0_mosi, ram0_mosi, encs0_mosi, leds0_mosi, pwms0_mosi}),
+        .slaves_miso({rom0_miso, ram0_miso, encs0_miso, leds0_miso, pwms0_miso}),
+        .slaves_ack ({rom0_ack , ram0_ack , encs0_ack , leds0_ack , pwms0_ack }),
+        .slaves_err ({rom0_err , ram0_err , encs0_err , leds0_err , pwms0_err }),
     );
 
 endmodule

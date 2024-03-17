@@ -1,7 +1,8 @@
 #include <neorv32.h>
 
-#include <soc/leds.h>
 #include <soc/encoders.h>
+#include <soc/leds.h>
+#include <soc/pwms.h>
 
 #include <rt/task.h>
 #include <rt/stack.h>
@@ -33,10 +34,9 @@ RT_TASK(heartbeat, RT_STACK_MIN, RT_TASK_PRIORITY_MIN);
 // Traction Control
 //
 
-#define ENCODER_RESOLUTION 90
 #define MEASURE_SPEED_PERIOD 50
 
-static int32_t motor_positions[4] = {0}; // raw encoder values
+static int32_t motor_positions[4]; // raw encoder values
 static uint32_t motor_speeds[4]; // rotations per second
 
 static void measure_speed(void)
@@ -57,23 +57,23 @@ static void measure_speed(void)
         rt_task_sleep_periodic(&last_wake_tick, MEASURE_SPEED_PERIOD);
     }
 }
+
 RT_TASK(measure_speed, RT_STACK_MIN, RT_TASK_PRIORITY_MAX);
 
 static void report_speeds(void)
 {
     uint32_t last_wake_tick = 0;
 
-    uint32_t t = 0;
     for (;;)
     {
-        fprintf(stdout, "[%u s] motor report\n", t++);
         for (int i = 0; i < 4; i++)
         {
-            fprintf(stdout, "motor[%u]\n\tpos: %i\n\tspeed: %u\n", i, motor_positions[i], motor_speeds[i]);
+            fprintf(stdout, "motor[%u] { pos=%i, speed=%u }\n", i, motor_positions[i], motor_speeds[i]);
         }
         rt_task_sleep_periodic(&last_wake_tick, 50);
     }
 }
+
 RT_TASK(report_speeds, RT_STACK_MIN, RT_TASK_PRIORITY_MIN + 1);
 
 //
@@ -86,6 +86,9 @@ void mcu_init(void)
     {
         LEDS->led[i] = 0x00000000;
     }
+
+    PWMS->ctrls[0] = 0x00000013;
+    PWMS->vals[0] = 0x2BF215F9; // 1KHz 50%
 
     neorv32_uart_setup(stdout, 115200, ~0);
 }
