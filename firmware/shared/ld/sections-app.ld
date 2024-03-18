@@ -11,8 +11,9 @@ SECTIONS
         . = ALIGN(__rx_region_align__);
         __rx_region__ = .;
         KEEP(*(.text._reset_vector));
-        KEEP(*(.text._trap_entry));
         *(.text);
+        . = ALIGN(128);
+        KEEP(*(.text.rt_trap_handler));
         __rx_region_end__ = .;
     } > FLASH
     __rx_region_size__ = __rx_region_end__ - __rx_region__;
@@ -45,6 +46,7 @@ SECTIONS
         __rw_region__ = .;
         *(.data*)
         *(.sdata*)
+        . = ALIGN(8);
     } > SRAM AT> FLASH
 
     .bss (NOLOAD) : ALIGN(4)

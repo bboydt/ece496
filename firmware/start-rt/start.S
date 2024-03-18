@@ -10,9 +10,11 @@ _reset_vector:
     // set stack pointer
     la sp, __stack_pointer
 
+    // set global pointer
+    //la gp, __global_pointer$
+
     // set trap vector
-    la t0, vector_table
-    ori t0, t0, 1
+    la t0, rt_trap_handler
     csrw mtvec, t0
 
     // clear leds
@@ -66,7 +68,7 @@ _reset_vector:
     jalr ra, t2
     j 0b
 1:
-
+    
     // jump to _init
     jal _init
 

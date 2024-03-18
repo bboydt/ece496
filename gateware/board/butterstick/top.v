@@ -42,6 +42,11 @@ module top (
         clk_divider <= clk_divider + 1;
     end
 
+    assign syzygy0[19] = 1'b1;
+    assign syzygy0[17] = 1'b1;
+    assign syzygy0[15] = 1'b1;
+    assign syzygy0[13] = 1'b1;
+
     // SoC
     soc soc0 (
         .sys_clk(sys_clk),

@@ -37,7 +37,7 @@ RT_TASK(heartbeat, RT_STACK_MIN, RT_TASK_PRIORITY_MIN);
 #define MEASURE_SPEED_PERIOD 50
 
 static int32_t motor_positions[4]; // raw encoder values
-static uint32_t motor_speeds[4]; // rotations per second
+static int32_t motor_speeds[4]; // rotations per second
 
 static void measure_speed(void)
 {
@@ -49,7 +49,7 @@ static void measure_speed(void)
         {
             int32_t position = ENCODERS->positions[i];
             int32_t delta = 0x7FFFFFFF & (uint32_t)(position - motor_positions[i]);
-            
+
             motor_speeds[i] = delta;
             motor_positions[i] = position;
         }
@@ -68,7 +68,7 @@ static void report_speeds(void)
     {
         for (int i = 0; i < 4; i++)
         {
-            fprintf(stdout, "motor[%u] { pos=%i, speed=%u }\n", i, motor_positions[i], motor_speeds[i]);
+            fprintf(stdout, "motor[%u] { pos=%i, speed=%i }\n", i, motor_positions[i], motor_speeds[i]);
         }
         rt_task_sleep_periodic(&last_wake_tick, 50);
     }
@@ -87,8 +87,11 @@ void mcu_init(void)
         LEDS->led[i] = 0x00000000;
     }
 
-    PWMS->ctrls[0] = 0x00000013;
-    PWMS->vals[0] = 0x2BF215F9; // 1KHz 50%
+    for (int i = 0; i < 4; i++)
+    {
+        PWMS->ctrls[i] = 0x00000013;
+        PWMS->vals[i] = 0x2BF2057E; // 1KHz 50%
+    }
 
     neorv32_uart_setup(stdout, 115200, ~0);
 }

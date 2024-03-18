@@ -10,132 +10,100 @@
 #include "common.h"
 #include "soc/leds.h"
 
+enum riscv_exceptions
+{
+    RISCV_EXCEPTION_I_ACCESS = 0x1,
+    RISCV_EXCEPTION_I_ILLEGAL = 0x2,
+    RISCV_EXCEPTION_I_MISALIGNED = 0x0,
+    RISCV_EXCEPTION_MENV_CALL = 0xB,
+    RISCV_EXCEPTION_UENV_CALL = 0x8,
+    RISCV_EXCEPTION_BREAKPOINT = 0x3,
+    RISCV_EXCEPTION_S_MISALIGNED = 0x6,
+    RISCV_EXCEPTION_L_MISALIGNED = 0x4,
+    RISCV_EXCEPTION_S_ACCESS = 0x7,
+    RISCV_EXCEPTION_L_ACCESS = 0x5
+};
+
+enum riscv_interrupts
+{
+    RISCV_INTERRUPT_MEI = 0xB,
+    RISCV_INTERRUPT_MSI = 0x3,
+    RISCV_INTERRUPT_MTI = 0x7,
+
+    RISCV_INTERRUPT_FIRQ_0 = 0x10,
+    RISCV_INTERRUPT_FIRQ_1 = 0x11,
+    RISCV_INTERRUPT_FIRQ_2 = 0x12,
+    RISCV_INTERRUPT_FIRQ_3 = 0x13,
+    RISCV_INTERRUPT_FIRQ_4 = 0x14,
+    RISCV_INTERRUPT_FIRQ_5 = 0x15,
+    RISCV_INTERRUPT_FIRQ_6 = 0x16,
+    RISCV_INTERRUPT_FIRQ_7 = 0x17,
+    RISCV_INTERRUPT_FIRQ_8 = 0x18,
+    RISCV_INTERRUPT_FIRQ_9 = 0x19,
+    RISCV_INTERRUPT_FIRQ_10 = 0x1A,
+    RISCV_INTERRUPT_FIRQ_11 = 0x1B,
+    RISCV_INTERRUPT_FIRQ_12 = 0x1C,
+    RISCV_INTERRUPT_FIRQ_13 = 0x1D,
+    RISCV_INTERRUPT_FIRQ_14 = 0x1E,
+    RISCV_INTERRUPT_FIRQ_15 = 0x1F
+};
+
 extern void rt_syscall_handler(void);
 
-RT_STACK(stack, 256);
+uint8_t rt_interrupt_stack[2048];
 
-#define __irq__ __attribute__((interrupt("machine")))
-
-void riscv_mtvec_mti(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_msi(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_mei(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq0(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq1(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq2(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq3(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq4(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq5(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq6(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq7(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq8(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq9(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq10(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq11(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq12(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq13(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq14(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-void riscv_mtvec_platform_irq15(void) __attribute__((interrupt("machine"), weak, alias("riscv_mtvec_default"))); 
-
-static inline void set_leds(uint32_t color)
+static void fault_handler(void)
 {
     for (int i = 0; i < 7; i++)
     {
-        LEDS->led[i] = color;
+        LEDS->led[i] = 0x00FF0000;
     }
-}
 
-static inline void dead_loop(void)
-{
     for (;;)
     {
-        __asm__ __volatile__ ("nop");
+        __asm__("nop" :::);
     }
 }
 
-__irq__ void riscv_mtvec_default(void) 
+static void default_handler(void)
 {
-    set_leds(0x00FF1F00);
-    dead_loop();
+    for (int i = 0; i < 7; i++)
+    {
+        LEDS->led[i] = 0x007FFF00;
+    }
+
+    for (;;)
+    {
+        __asm__("nop" :::);
+    }
 }
 
-enum mtvec_exceptions
+extern void mti_handler(void) __attribute__((weak, alias("default_handler")));
+
+struct vector_table
 {
-    MTVEC_EX_I_ACCESS_FAULT     = 0x01,
-    MTVEC_EX_I_ILLEGAL          = 0x02,
-    MTVEC_EX_I_MISALIGNED       = 0x00,
-    MTVEC_EX_MENV_CALL          = 0x0b,
-    MTVEC_EX_UENV_CALL          = 0x08,
-    MTVEC_EX_BREAKPOINT         = 0x03,
-    MTVEC_EX_STORE_MISALIGNED   = 0x06,
-    MTVEC_EX_LOAD_MISALIGNED    = 0x04,
-    MTVEC_EX_STORE_ACCESS_FAULT = 0x07,
-    MTVEC_EX_LOAD_ACCESS_FAULT  = 0x05
+    void (*exception_handlers[16])(void);
+    void (*interrupt_handlers[32])(void);
 };
 
-__irq__ void riscv_mtvec_exception_old(void)
-{
-    uint32_t mcause;
-    __asm__ __volatile__ ("csrr %0, mcause" : "=r"(mcause) ::);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverride-init"
+const struct vector_table vector_table __attribute__((section(".vector_table"))) = {
+    .exception_handlers = {
+        [0 ... 15] = default_handler,
+        [RISCV_EXCEPTION_MENV_CALL] = rt_syscall_handler,
+        [RISCV_EXCEPTION_I_ACCESS] = fault_handler,
+        [RISCV_EXCEPTION_I_ILLEGAL] = fault_handler,
+        [RISCV_EXCEPTION_I_MISALIGNED] = fault_handler,
+        [RISCV_EXCEPTION_S_MISALIGNED] = fault_handler,
+        [RISCV_EXCEPTION_L_MISALIGNED] = fault_handler,
+        [RISCV_EXCEPTION_S_ACCESS] = fault_handler,
+        [RISCV_EXCEPTION_L_ACCESS] = fault_handler
+    },
 
-    switch (mcause)
-    {
-        case MTVEC_EX_MENV_CALL:
-            uint32_t mepc;
-            __asm__ __volatile__ ("csrr %0, mepc" : "=r"(mepc) :: "memory");
-            mepc += 4;
-            __asm__ __volatile__ ("csrw mepc, %0" :: "r"(mepc) : "memory");
-            rt_syscall_handler();
-            break;
-        case MTVEC_EX_BREAKPOINT:
-            set_leds(0x00FF1FFF);
-            dead_loop();
-            break;
-        default:
-            set_leds(0x00FF0000);
-            dead_loop();
-            break;
+    .interrupt_handlers = {
+        [0 ... 31] = default_handler,
+        [RISCV_INTERRUPT_MTI] = mti_handler
     }
-}
-
-__attribute__((naked, section(".vector_table"), aligned(128)))
-void vector_table(void)
-{
-    __asm__ __volatile__ (
-        /* 0 */
-        ".org  vector_table + 0*4;"
-        "jal zero, riscv_mtvec_exception;"
-        
-        /* 3 */
-        ".org  vector_table + 3*4;"
-        "jal zero, riscv_mtvec_msi;"
-        
-        /* 7 */
-        ".org  vector_table + 7*4;"
-        "jal zero, riscv_mtvec_mti;"
-        
-        /* 11 */
-        ".org  vector_table + 11*4;"
-        "jal zero, riscv_mtvec_mei;"
-
-        /* 16 */
-        ".org  vector_table + 16*4;"
-        "jal   riscv_mtvec_platform_irq0;"
-        "jal   riscv_mtvec_platform_irq1;"
-        "jal   riscv_mtvec_platform_irq2;"
-        "jal   riscv_mtvec_platform_irq3;"
-        "jal   riscv_mtvec_platform_irq4;"
-        "jal   riscv_mtvec_platform_irq5;"
-        "jal   riscv_mtvec_platform_irq6;"
-        "jal   riscv_mtvec_platform_irq7;"
-        "jal   riscv_mtvec_platform_irq8;"
-        "jal   riscv_mtvec_platform_irq9;"
-        "jal   riscv_mtvec_platform_irq10;"
-        "jal   riscv_mtvec_platform_irq11;"
-        "jal   riscv_mtvec_platform_irq12;"
-        "jal   riscv_mtvec_platform_irq13;"
-        "jal   riscv_mtvec_platform_irq14;"
-        "jal   riscv_mtvec_platform_irq15;"
-
-        :::
-    );
-}
+};
+#pragma GCC diagnostic pop

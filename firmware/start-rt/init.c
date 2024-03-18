@@ -6,7 +6,7 @@
 
 #define TICK_PERIOD (NEORV32_SYSINFO->CLK / 100) 
 
-__attribute__((interrupt("machine"))) void riscv_mtvec_mti(void)
+void mti_handler(void)
 {
     neorv32_mtime_set_timecmp(neorv32_mtime_get_timecmp() + TICK_PERIOD);
     rt_tick_advance();
