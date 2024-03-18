@@ -46,7 +46,6 @@ SECTIONS
         __rw_region__ = .;
         *(.data*)
         *(.sdata*)
-        . = ALIGN(8);
     } > SRAM AT> FLASH
 
     .bss (NOLOAD) : ALIGN(4)
