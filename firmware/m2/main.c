@@ -48,7 +48,8 @@ static void measure_speed(void)
         for (int i = 0; i < 4; i++)
         {
             int32_t position = ENCODERS->positions[i];
-            int32_t delta = 0x7FFFFFFF & (uint32_t)(position - motor_positions[i]);
+            int32_t delta = (position - motor_positions[i]);
+            if (delta < 0) delta = -delta;
 
             motor_speeds[i] = delta;
             motor_positions[i] = position;
