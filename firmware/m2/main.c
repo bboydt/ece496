@@ -69,7 +69,10 @@ static void report_speeds(void)
     {
         for (int i = 0; i < 4; i++)
         {
-            fprintf(stdout, "motor[%u] { pos=%i, speed=%i }\n", i, motor_positions[i], motor_speeds[i]);
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wformat"
+            fprintf(stdout, "motor[%u] { pos=%d, speed=%d }\n", i, motor_positions[i], motor_speeds[i]);
+#pragma GCC diagnostic pop
         }
         rt_task_sleep_periodic(&last_wake_tick, 50);
     }

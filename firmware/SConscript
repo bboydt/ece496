@@ -106,7 +106,9 @@ libs = {
     "rt-riscv": librt_riscv,
     "neorv32": libneorv32,
     "start": None,
-    "start-rt": None
+    "start-rt": None,
+    "esp8266": None,
+    "stdio": None,
 }
 
 for lib in libs:
@@ -131,7 +133,7 @@ apps = {
     
     "blinky": {
         "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"] ]
+        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["stdio"] ]
     },
    
     "m1": {
@@ -141,7 +143,7 @@ apps = {
 
     "m2": {
         "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"] ]
+        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["esp8266"], libs["stdio"] ]
     }
 
 }
