@@ -91,30 +91,13 @@ static size_t __read_until(FILE *stream, char *buffer)
 
 int vfscanf(FILE *stream, const char *format, va_list args)
 {
-    char buffer[256];
-    char f, c;
+    char f;
 
-    while ((f = *format++))
+    while ((f = sgetc(format)))
     {
-        if (f == '%')
+        switch (f)
         {
-            switch (f)
-            {
-                case 's':
-                    {
-                        char *dst = va_arg(args, char*);
-                        __read_until(stream, dst);
-                        break;
-                    }
-                case '':
-                    buffer[__read_until(stream, buffer, 255)];
-                default:
-                    break;
-            }
-        }
-        else
-        {
-            while ((c = fgetc(stream) != f);
+
         }
     }
 }
