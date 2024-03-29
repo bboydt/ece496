@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define ENCODERS_BASE ((uint32_t)0xF0000000UL)
 
 struct encoder_regs

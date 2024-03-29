@@ -16,11 +16,9 @@
 
 size_t server_recv(char *buffer, size_t size)
 {
-    size_t recv_size;
+    //size_t recv_size;
 
-    while (ESP8266
-
-
+    return 0;
 }
 
 

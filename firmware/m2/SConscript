@@ -1,6 +1,6 @@
 Import("*")
 
-m2_elf = env.Program("m2.elf", ["main.c"])
+m2_elf = env.Program("m2.elf", ["main.c", "heartbeat.c", "motor_control.c", "server.c"])
 
 m2_bin = env.Command(
     "m2.bin",

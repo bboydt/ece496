@@ -1,23 +1,35 @@
 #!/usr/bin/env python3
 
-import socketserver
+from socket import socket, AF_INET, SOCK_DGRAM
+from protocol import Packet, PacketId as PID
 
-class MyTCPHandler(socketserver.BaseRequestHandler):
+class ServerApp():
 
-    def handle(self):
-        # self.request is the TCP socket connected to the client
-        self.data = self.request.recv(4).strip()
-        print("Received from {}:".format(self.client_address[0]))
-        print(self.data)
-        # just send back the same data, but upper-cased
-        self.request.sendall(self.data.upper())
+    def __init__(self):
+        self.sock = socket(AF_INET, SOCK_DGRAM)
+        self.address = ("localhost", 42069)
+        self.sock.bind(self.address)
+
+    def run(self):
+        try:
+            while True:
+                data, addr = self.sock.recvfrom(1024)
+                print(f"\033[1;35mPACKET:\033[0m addr={addr} data={data.hex()}")
+
+                if (data[0] != Packet.MAGIC):
+                    print(f"\033[1;31mERROR:\033[0m Invalid packet.")
+                else:
+                    if (data[1] == PID.HEARTBEAT.value):
+                        print(f"\033[1;35mPACKET:\033[0m Heartbeat.")
+                        self.sock.sendto(Packet.create(PID.HEARTBEAT, b"\x00"), addr)
+
+        except KeyboardInterrupt:
+            self.cleanup()
+
+    def cleanup(self):
+        if self.sock is not None:
+            self.sock.close()
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 9999
-
-    # Create the server, binding to localhost on port 9999
-    with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:
-        # Activate the server; this will keep running until you
-        # interrupt the program with Ctrl-C
-        server.serve_forever()
+    ServerApp().run()
 

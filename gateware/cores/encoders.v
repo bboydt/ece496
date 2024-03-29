@@ -10,16 +10,37 @@ module encoder (
     output reg [31:0] position
 );
 
+    reg avg_a;
+    reg avg_b;
     reg prev_a;
     reg [31:0] tmp_position;
 
+    reg [47:0] a_samples;
+    reg [47:0] b_samples;
+    
     always @(posedge clk) begin
         // if rising edge
-        if ((a ^ prev_a) & a) begin
-            tmp_position <= (b) ? tmp_position + 1 : tmp_position - 1;
+        if ((avg_a ^ prev_a) & avg_a) begin
+            tmp_position <= (avg_b) ? tmp_position + 1 : tmp_position - 1;
         end
-        prev_a <= a;
+        prev_a <= avg_a;
         position <= (~rst) ? tmp_position : 32'd0;
+
+        a_samples <= {a_samples[46:0], a};
+        b_samples <= {b_samples[46:0], b};
+
+        if (a_samples == 48'h0) begin
+            avg_a <= 1'b0;
+        end else if (a_samples == 48'hFFFFFFFFFF) begin
+            avg_a <= 1'b1;
+        end
+
+        if (b_samples == 48'h0) begin
+            avg_b <= 1'b0;
+        end else if (b_samples == 48'hFFFFFFFFFF) begin
+            avg_b <= 1'b1;
+        end
+
     end
 
 endmodule

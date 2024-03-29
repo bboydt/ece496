@@ -107,8 +107,7 @@ libs = {
     "neorv32": libneorv32,
     "start": None,
     "start-rt": None,
-    "esp8266": None,
-    "stdio": None,
+    "server": None,
 }
 
 for lib in libs:
@@ -131,19 +130,19 @@ apps = {
         "libs": []
     },
     
-    "blinky": {
-        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["stdio"] ]
-    },
+    #"blinky": {
+    #    "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+    #    "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["newlib"] ]
+    #},
    
-    "m1": {
-        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-        "libs": [ libs["neorv32"], libs["start"] ]
-    },
+    #"m1": {
+    #    "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+    #    "libs": [ libs["neorv32"], libs["start"], libs["newlib"] ]
+    #},
 
     "m2": {
         "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["esp8266"], libs["stdio"] ]
+        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["server"] ]
     }
 
 }
@@ -165,8 +164,10 @@ for app in apps:
     app_env.Replace(LIBS = apps[app]["libs"])
     app_env.Append(
         LINKFLAGS = ld_flags,
-        PROGEMITTER = ld_emitter
+        PROGEMITTER = ld_emitter,
+        CPPPATH = [app],
     )
+    app_env.Append(LINKFLAGS = ["-march=rv32imac", "-mabi=ilp32"])
 
     app = SConscript(
         dirs = app,

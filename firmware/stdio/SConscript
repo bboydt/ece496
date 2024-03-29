@@ -1,5 +1,0 @@
-Import("env")
-
-libstdio = env.StaticLibrary(["stdio.c"])
-
-Return("libstdio")

@@ -18,6 +18,7 @@ module soc (
 
     input vccio_clk,
     input led_clk,
+    input pwm_clk,
 
     output [6:0] user_leds_en,
     output [2:0] user_leds_color,
@@ -31,13 +32,15 @@ module soc (
 
     input uart0_rx,
     output uart0_tx,
+    input uart1_rx,
+    output uart1_tx,
 
-    inout [63:0] gpio,
+    inout [63:0] gpio_out,
 
     input [3:0] enc_a,
     input [3:0] enc_b,
 
-    output [3:0] pwms,
+    output [4:0] pwms,
 
     input jtag_tck,
     input jtag_tdi,
@@ -59,11 +62,12 @@ module soc (
     // PWMs
     `WISHBONE_WIRES(pwms0);
     pwms #(
-        .COUNT(4)
+        .COUNT(5)
     ) pwms0 (
         .clk(sys_clk),
         .rst(sys_rst),
         `WISHBONE_PORT(wb, pwms0),
+        .pwm_clk(pwm_clk),
         .pwms(pwms)
     );
 
@@ -75,8 +79,10 @@ module soc (
 
         .uart0_rx(uart0_rx),
         .uart0_tx(uart0_tx),
+        .uart1_rx(uart1_rx),
+        .uart1_tx(uart1_tx),
 
-        .gpio_out(gpio),
+        .gpio_out(gpio_out),
 
         .xip_csn(spiflash_cs_n),
         .xip_clk(spiflash_clk),

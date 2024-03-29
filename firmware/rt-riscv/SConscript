@@ -1,5 +1,0 @@
-Import("*")
-
-librtriscv = env.StaticLibrary("librtriscv", ["atomic.c", "riscv.c", "syscall.S", "task_entry.S"])
-
-Return("librtriscv")

@@ -11,6 +11,8 @@ entity neorv32_wrapper is
 
         uart0_tx : out std_ulogic;
         uart0_rx : in std_ulogic;
+        uart1_tx : out std_ulogic;
+        uart1_rx : in std_ulogic;
 
         gpio_out : out std_ulogic_vector(63 downto 0);
 
@@ -44,7 +46,7 @@ begin
 
     neorv32_top_inst: neorv32_top
     generic map (
-        CLOCK_FREQUENCY => 90_000_000,
+        CLOCK_FREQUENCY => 80_000_000,
 
         INT_BOOTLOADER_EN => false,
         ON_CHIP_DEBUGGER_EN => true,
@@ -55,18 +57,22 @@ begin
         CPU_EXTENSION_RISCV_Zicntr => true,
         
         MEM_INT_IMEM_EN => false,
-        MEM_INT_DMEM_EN => false,
+        MEM_INT_DMEM_EN => true,
+        MEM_INT_DMEM_SIZE => 32768,
         MEM_EXT_EN => true,
         
         IO_GPIO_NUM => 32, 
         IO_MTIME_EN => true,
         IO_UART0_EN => true,
+        IO_UART1_EN => true,
 
         XIP_EN => true,
         XIP_CACHE_EN => true,
         
         IO_UART0_RX_FIFO => 64,
-        IO_UART0_TX_FIFO => 64
+        IO_UART0_TX_FIFO => 64,
+        IO_UART1_RX_FIFO => 64,
+        IO_UART1_TX_FIFO => 64
     )
     port map (
         clk_i  => sys_clk,
@@ -85,6 +91,8 @@ begin
 
         uart0_txd_o => uart0_tx,
         uart0_rxd_i => uart0_rx,
+        uart1_txd_o => uart1_tx,
+        uart1_rxd_i => uart1_rx,
 
         gpio_o => gpio_out,
 

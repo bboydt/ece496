@@ -3,11 +3,12 @@ module leds #(
 ) (
     input sys_clk,
     input sys_rst,
-    `WISHBONE_SLAVE(wb),
 
     input led_clk,
     output reg [COUNT-1:0] leds,
-    output reg [2:0] rgb_sel
+    output reg [2:0] rgb_sel,
+
+    `WISHBONE_SLAVE(wb)
 );
     // Wishbone
     reg [31:0] colors[COUNT-1:0];
