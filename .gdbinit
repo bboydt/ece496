@@ -1,5 +1,5 @@
 target extended-remote :3333
-file build/fw/app/m2/m2.elf
+file build/fw/app/walleos/walleos.elf
 set remote hardware-breakpoint-limit 1
 
 mem 0x00000000 0x00004000 ro 32
