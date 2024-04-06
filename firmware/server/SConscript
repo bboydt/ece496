@@ -1,5 +1,5 @@
 Import("env")
 
-libesp = env.StaticLibrary(["server.c"])
+libserver = env.StaticLibrary(["server.c"])
 
-Return("libesp")
+Return("libserver")
