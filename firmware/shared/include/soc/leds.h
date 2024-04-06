@@ -2,11 +2,13 @@
 
 #include <stdint.h>
 
-#define LEDS_BASE ((uint32_t)0xF0000100UL)
+#define SOC_LEDS_BASE 0xF0000000UL
+
+#define SOC_LED_COUNT 7
 
 struct led_regs
 {
-    uint32_t led[7];
+    uint32_t leds[SOC_LED_COUNT];
 };
 
-#define LEDS ((struct led_regs*) LEDS_BASE)
+#define SOC_LEDS ((volatile struct led_regs*)SOC_LEDS_BASE)
