@@ -56,7 +56,7 @@ fw_env = env.Clone(
     PROGSUFFIX = ".elf",
 
     # printing
-    CCCOMSTR     = "cc $TARGET",
+    #CCCOMSTR     = "cc $TARGET",
     CXXCOMSTR    = "c++ $TARGET",
     ASCOMSTR     = "as $TARGET",
     ASPPCOMSTR   = "as $TARGET",
@@ -71,14 +71,14 @@ fw_env.Append(CPPSUFFIX = ".s")
 
 
 # Build Libraries
-lib_env = fw_env.Clone()
+base_lib_env = fw_env.Clone()
 
 libneorv32 = SConscript(
     deps_dir.File("SConscript-neorv32"),
     variant_dir = "lib/neorv32",
     duplicate = False,
     exports = {
-        "env": lib_env,
+        "env": base_lib_env,
         "neorv32_dir": deps_dir.Dir("neorv32")
     }
 )
@@ -88,7 +88,7 @@ librt = SConscript(
     variant_dir = "lib/rt",
     duplicate = False,
     exports = {
-        "env": lib_env
+        "env": base_lib_env
     }
 )
 
@@ -97,7 +97,7 @@ librt_riscv = SConscript(
     variant_dir = "lib/rt/riscv",
     duplicate = False,
     exports = {
-        "env": lib_env
+        "env": base_lib_env
     }
 )
 
@@ -105,6 +105,8 @@ libs = {
     "rt": librt,
     "rt-riscv": librt_riscv,
     "neorv32": libneorv32,
+    "stdlib": None,
+    "i2c": None,
     "start": None,
     "start-rt": None,
     "server": None,
@@ -112,6 +114,8 @@ libs = {
 
 for lib in libs:
     if libs[lib] is None:
+        lib_env = base_lib_env.Clone()
+        lib_env.Append(CPPPATH=Dir(f"{lib}/include").srcnode())
         libs[lib] = SConscript(
             dirs = lib,
             variant_dir = "lib/" + lib,
@@ -132,7 +136,7 @@ apps = {
     
     #"blinky": {
     #    "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-    #    "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["newlib"] ]
+    #    "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"] ]
     #},
    
     #"m1": {
@@ -140,11 +144,20 @@ apps = {
     #    "libs": [ libs["neorv32"], libs["start"], libs["newlib"] ]
     #},
 
-    "m2": {
-        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-        "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["server"] ]
-    }
+    #"m2": {
+    #    "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+    #    "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"], libs["server"] ]
+    #},
 
+    "motor_test": {
+        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+        "libs": [ "neorv32", "start-rt", "rt", "rt-riscv", "stdlib" ]
+    },
+
+    "walleos": {
+        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+        "libs": [ "neorv32", "start-rt", "rt", "rt-riscv", "stdlib", "i2c", "server" ]
+    },
 }
 
 if target_app is not None:
@@ -161,7 +174,8 @@ for app in apps:
         return target + [map_file], source
 
     app_env = fw_env.Clone()
-    app_env.Replace(LIBS = apps[app]["libs"])
+    app_libs = [libs[x] for x in apps[app]["libs"]]
+    app_env.Replace(LIBS = app_libs)
     app_env.Append(
         LINKFLAGS = ld_flags,
         PROGEMITTER = ld_emitter,
