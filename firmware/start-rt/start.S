@@ -17,17 +17,6 @@ _reset_vector:
     la t0, rt_trap_handler
     csrw mtvec, t0
 
-    // clear leds
-    li t0, 0xF0000100
-    li t1, 0x00000000
-    sw t1, 0(t0)
-    sw t1, 4(t0)
-    sw t1, 8(t0)
-    sw t1, 12(t0)
-    sw t1, 16(t0)
-    sw t1, 20(t0)
-    sw t1, 24(t0)
-
     // copy sections
     la t0, __copy_table__
     la t1, __copy_table_end__

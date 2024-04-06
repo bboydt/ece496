@@ -1,8 +1,7 @@
 #include <neorv32.h>
 
+#include "rt_extra.h"
 #include <rt/tick.h>
-
-#include <soc/common.h>
 
 #define TICK_PERIOD (MS_PER_TICK * (NEORV32_SYSINFO->CLK / 1000))
 

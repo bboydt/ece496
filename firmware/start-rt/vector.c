@@ -1,14 +1,11 @@
 #include <stdint.h>
 
-// defines trap codes
-#include <neorv32.h>
+#include <soc/leds.h>
 
+#include "rt_extra.h"
 #include <rt/stack.h>
 #include <rt/syscall.h>
 #include <rt/tick.h>
-
-#include "common.h"
-#include "soc/leds.h"
 
 enum riscv_exceptions
 {
@@ -56,7 +53,7 @@ static void fault_handler(void)
 {
     for (int i = 0; i < 7; i++)
     {
-        LEDS->led[i] = 0x00FF0000;
+        SOC_LEDS->leds[i] = 0x00FF0000;
     }
 
     for (;;)
@@ -69,7 +66,7 @@ static void default_handler(void)
 {
     for (int i = 0; i < 7; i++)
     {
-        LEDS->led[i] = 0x007FFF00;
+        SOC_LEDS->leds[i] = 0x007FFF00;
     }
 
     for (;;)
