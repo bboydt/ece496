@@ -56,7 +56,7 @@ fw_env = env.Clone(
     PROGSUFFIX = ".elf",
 
     # printing
-    #CCCOMSTR     = "cc $TARGET",
+    CCCOMSTR     = "cc $TARGET",
     CXXCOMSTR    = "c++ $TARGET",
     ASCOMSTR     = "as $TARGET",
     ASPPCOMSTR   = "as $TARGET",
