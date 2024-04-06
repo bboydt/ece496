@@ -1,0 +1,5 @@
+Import("env")
+
+libi2c = env.StaticLibrary(["i2c.c"])
+
+Return("libi2c")
