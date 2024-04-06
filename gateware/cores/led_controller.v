@@ -1,4 +1,4 @@
-module leds #(
+module led_controller #(
     parameter COUNT = 7
 ) (
     input sys_clk,
@@ -49,27 +49,21 @@ module leds #(
                 .WIDTH(8)
             ) led_red_pwm (
                 .clk(red_clk),
-                .rst(sys_rst),
-                .max(8'hff),
-                .threshold(colors[i][16+:8]),
+                .compare(colors[i][16+:8]),
                 .out(leds_red[i])
             );
             pwm #(
                 .WIDTH(8)
             ) led_green_pwm (
                 .clk(green_clk),
-                .rst(sys_rst),
-                .max(8'hff),
-                .threshold(colors[i][8+:8]),
+                .compare(colors[i][8+:8]),
                 .out(leds_green[i])
             );
             pwm #(
                 .WIDTH(8)
             ) led_blue_pwm (
                 .clk(blue_clk),
-                .rst(sys_rst),
-                .max(8'hff),
-                .threshold(colors[i][0+:8]),
+                .compare(colors[i][0+:8]),
                 .out(leds_blue[i])
             );
         end

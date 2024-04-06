@@ -2,20 +2,12 @@ module pwm #(
     parameter WIDTH = 8,
 ) (
     input clk,
-    input rst,
-    
-    input [WIDTH-1:0] max,
-    input [WIDTH-1:0] threshold,
-
+    input [WIDTH-1:0] compare,
     output reg out
 );
-    reg [WIDTH:0] cnt;
-
+    reg [WIDTH-1:0] counter;
     always @(posedge clk) begin
-        cnt <= (cnt < max) ? (cnt + 1) : (0);
-    end
-
-    always @(*) begin
-        out = (cnt < threshold);
+        counter <= (counter != {{WIDTH-1{1'b1}}, 1'b0}) ? (counter + 1) : ({WIDTH{1'b0}});
+        out <= (counter < compare);
     end
 endmodule

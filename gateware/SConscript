@@ -4,6 +4,8 @@ import json
 
 Import("*")
 
+lpf_file = root_dir.File("gateware/board/butterstick/r1_0.pcf")
+
 # Gateware Environment
 gw_env = env.Clone(
     toolpath = [deps_dir.Dir("scons-fpga"), deps_dir.Dir("scons-dfu")],
@@ -15,7 +17,7 @@ gw_env = env.Clone(
         "--um5g-85k",
         "--speed=8", 
         "--package=CABGA381",
-        "--lpf=" + root_dir.File("gateware/board/butterstick/r1_0.pcf").path
+        "--lpf=" + lpf_file.path
     ],
     ECPPACKFLAGS = [
         "--compress",
@@ -100,8 +102,10 @@ top_bootrom_textcfg = gw_env.Command(
         "nextpnr-ecp5 $TARGET"
     )
 )
+gw_env.Depends(top_bootrom_textcfg, lpf_file)
 
 top_bitstream = gw_env.Ecp5Bitstream(top_bootrom_textcfg)
+gw_env.Depends(top_bitstream, top_bootrom_textcfg)
 
 gw_env.DfuSuffix("top/top.dfu", top_bitstream)
 

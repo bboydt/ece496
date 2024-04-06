@@ -14,6 +14,11 @@ entity neorv32_wrapper is
         uart1_tx : out std_ulogic;
         uart1_rx : in std_ulogic;
 
+        twi_sda_i : in std_ulogic;
+        twi_sda_o : out std_ulogic;
+        twi_scl_i : in std_ulogic;
+        twi_scl_o : out std_ulogic;
+
         gpio_out : out std_ulogic_vector(63 downto 0);
 
         bus_cyc : out std_ulogic;
@@ -59,18 +64,24 @@ begin
         MEM_INT_IMEM_EN => false,
         MEM_INT_DMEM_EN => true,
         MEM_INT_DMEM_SIZE => 32768,
-        MEM_EXT_EN => true,
         
-        IO_GPIO_NUM => 32, 
-        IO_MTIME_EN => true,
-        IO_UART0_EN => true,
-        IO_UART1_EN => true,
+        XBUS_EN => true,
 
         XIP_EN => true,
         XIP_CACHE_EN => true,
         
+        IO_GPIO_NUM => 32, 
+
+        IO_MTIME_EN => true,
+
+        IO_TWI_EN => true,
+        IO_TWI_FIFO => 8,
+        
+        IO_UART0_EN => true,
         IO_UART0_RX_FIFO => 64,
         IO_UART0_TX_FIFO => 64,
+
+        IO_UART1_EN => true,
         IO_UART1_RX_FIFO => 64,
         IO_UART1_TX_FIFO => 64
     )
@@ -78,21 +89,25 @@ begin
         clk_i  => sys_clk,
         rstn_i => sys_rst_n,
 
-        wb_cyc_o => bus_cyc,
-        wb_stb_o => bus_stb,
-        wb_we_o  => bus_we,
-        wb_ack_i => bus_ack,
-        wb_err_i => bus_err,
-        wb_tag_o => bus_tag,
-        wb_sel_o => bus_sel,
-        wb_adr_o => bus_adr,
-        wb_dat_o => bus_mosi,
-        wb_dat_i => bus_miso,
+        xbus_cyc_o => bus_cyc,
+        xbus_stb_o => bus_stb,
+        xbus_we_o  => bus_we,
+        xbus_ack_i => bus_ack,
+        xbus_err_i => bus_err,
+        xbus_sel_o => bus_sel,
+        xbus_adr_o => bus_adr,
+        xbus_dat_o => bus_mosi,
+        xbus_dat_i => bus_miso,
 
         uart0_txd_o => uart0_tx,
         uart0_rxd_i => uart0_rx,
         uart1_txd_o => uart1_tx,
         uart1_rxd_i => uart1_rx,
+
+        twi_sda_i => twi_sda_i,
+        twi_sda_o => twi_sda_o,
+        twi_scl_i => twi_scl_i,
+        twi_scl_o => twi_scl_o,
 
         gpio_o => gpio_out,
 
