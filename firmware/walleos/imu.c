@@ -1,7 +1,9 @@
+#include <stdint.h>
+
 #include <neorv32.h>
 
 #include <soc/leds.h>
-#include <util/i2c.h>
+#include <i2c.h>
 
 #include <rt/task.h>
 #include <rt/stack.h>
@@ -45,12 +47,9 @@ static void imu(void)
     i2c_write_u8(IMU_ADDR, OPR_MODE, 0x08);
     rt_task_sleep(MS_TO_TICKS(100));
 
-    int16_t z;
-
     uint32_t tick = 0;
     for (;;)
     {
-        z = i2c_read_s16(IMU_ADDR, EUL_Z);
         rt_task_sleep_periodic(&tick, IMU_TASK_PERIOD);
     }
 }

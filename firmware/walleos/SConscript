@@ -1,7 +1,7 @@
 Import("*")
 
 name = "walleos"
-sources = ["main.c"]
+sources = ["main.c", "leds.c", "motors.c", "imu.c"]
 
 env.Append(CFLAGS="-Wno-format")
 
