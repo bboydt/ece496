@@ -1,61 +1,58 @@
 #pragma once
 
+#include <neorv32.h>
+
 #include <stdint.h>
 
-enum car_mode
+#include <soc/motors.h>
+
+#include <rt/rwlock.h>
+
+#define SYS_MOTOR_CONTROL_BIT 0
+#define SYS_SERVER_BIT 1
+#define SYS_POS_CONTROL_BIT 2
+
+#define CAR_SYSTEMS_READY 0b0011
+
+#define MOTOR_SPEED_SAMPLES 4
+
+enum car_state
 {
-    // Yellow LED
-    CAR_MODE_IDLE = 0,
+    CAR_STATE_IDLE = 0,
+    CAR_STATE_MANUAL = 1,
+    CAR_STATE_AUTO = 2,
+    CAR_STATE_FAULT = 3
+};
+
+struct global_state
+{
+    enum car_state state;
+
+    // bit mask of all system statuses (1=running, 0=not running)
+    uint32_t systems;
+
+    struct position
+    {
+        uint8_t x;
+        uint8_t y;
+        uint8_t r;
+    } pos;
     
-    // Blue LED
-    CAR_MODE_MANUAL = 1,
-    
-    // Green LED
-    CAR_MODE_AUTO = 2,
-
-    // Red LED
-    CAR_MODE_FAULT = 3,
+    struct motors_state
+    {
+        struct rt_rwlock rwlock;
+        int32_t positions[SOC_MOTOR_COUNT];
+        int32_t speed_samples[MOTOR_SPEED_SAMPLES];
+        int32_t current_speeds[SOC_MOTOR_COUNT];
+        int32_t target_speeds[SOC_MOTOR_COUNT];
+        int32_t errors[SOC_MOTOR_COUNT];
+    } motors;
 };
 
-#define CAR_MDOE_LAST CAR_MODE_FAULT
 
-enum car_task
-{
-    CAR_TASK_IDLE = 0,
-    CAR_TASK_GOTO_PICK = 1,
-    CAR_TASK_GOTO_FIND_BOX = 2,
-    CAR_TASK_GOTO_PICK_BOX = 3,
-    CAR_TASK_GOTO_DROP = 4,
-    CAR_TASK_GOTO_DROP_BOX = 5,
-};
+extern volatile struct global_state car;
 
-#define SPEED_SAMPLES 8
+void fault(void);
 
-struct car_state
-{
-    volatile uint8_t mode;
-
-    int32_t current_x;
-    int32_t current_y;
-    int32_t current_r;
-
-    int32_t target_x;
-    int32_t target_y;
-    int32_t target_r;
-
-    uint8_t pinch;
-    uint8_t z_dir;
-
-    volatile int32_t target_speeds[4];
-    int32_t current_speeds_pre_avg[4][SPEED_SAMPLES];
-    volatile int32_t current_speeds[4];
-    volatile int32_t positions[4];
-
-    int32_t errors[4];
-    int32_t error_sums[4];
-
-    uint32_t motor_pwm_widths[4];
-};
-
-extern struct car_state car;
+#define printf(fmt, ...) neorv32_uart0_printf(fmt, ## __VA_ARGS__)
 
