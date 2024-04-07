@@ -1,0 +1,15 @@
+Import("*")
+
+name = "motor_test"
+sources = ["main.c"]
+
+elf = env.Program(f"{name}.elf", ["main.c"])
+
+binary = env.Command(
+    f"{name}.bin",
+    [elf],
+    "$OBJCOPY -I elf32-little $SOURCE -O binary $TARGET",
+    cmdstr = "objcopy $TARGET"
+)
+
+dfu = env.DfuSuffix(f"{name}.dfu", binary)
