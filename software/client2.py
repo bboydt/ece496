@@ -13,10 +13,6 @@ from dataclasses import dataclass
 
 PORT = 42069
 
-class States(Enum):
-    COMMAND = 0
-    OPTIONS = 1
-    
 class CarConnection():
 
     def __init__(self, address):
@@ -24,6 +20,10 @@ class CarConnection():
 
     def __del__(self):
         ...
+
+#
+# Controller 
+#
 
 @dataclass
 class ControllerState():
@@ -90,26 +90,57 @@ class Controller():
         # when the loop is done, disconnect
         self.controller.close()
 
+
+
+
+#
+# Command Line Interface (CLI)
+#
+
+class CLIStates(Enum):
+    NORMAL = 0,
+    SETTINGS = 1,
+    SET_MODE = 2,
+    SAVE_POS = 3,
+    GOTO_POS = 4
+
 class CLI():
     DISCONNECTED_COLOR = (30, 47)
     IDLE_COLOR = (30, 43)
     MANUAL_COLOR = (30, 44)
     AUTO_COLOR = (30, 42)
 
+    SETTINGS_MENU = ('Settings: ', ['set mode', 'save position'])
+    MODES_MENU = ('Select Mode: ', ['idle', 'manual', 'auto'])
+    POSITIONS_MENU = ('Select Position: ', ['home', 'pick', 'drop'])
+
     def __init__(self):
+
+        # state
         self.stop_requested = False
+        self.state = CLIStates.SETTINGS
+
+        # menu
+        self.menu = self.SETTINGS_MENU
+        self.menu_index = 0
+
+        # terminal
         self.print_lock = Lock()
         self.prompt = '\033[30m>\033[0m '
         self.motd = 'Type \'help\' for a list of commands. Press C-d to exit.'
         self.size = os.get_terminal_size()
-        self.controller = Controller(self, self.handle_controller)
-        self.state = States.COMMAND
         self.header_color = (30, 47)
+
+        # controller
+        self.controller = Controller(self, self.handle_controller)
         self.prev_controller_state = ControllerState([], 0, False, False, False, False)
-        self.menu_items = ['option a', 'option b', 'option c']
+
+        self.menu_items = ['set mode', '', 'option c']
         self.menu_selection = 0
-        self.set_header('Disconnected')
+        #self.set_header('Disconnected')
         self.init_commands()
+        self.ping = 0
+    
 
     def __del__(self):
         ...
@@ -127,11 +158,13 @@ class CLI():
         # check for controller
         if not self.controller.connect():
             self.print_warning('Controller not connected.')
+        else:
+            self.print('Press \'options\' on controller to open actions menu.')
 
         # do main loop
         try:
             while not self.stop_requested:
-                self.draw_header()
+                self.redraw()
                 self.print(self.prompt, end='')
                 command = input()
                 args = command.split()
@@ -144,44 +177,53 @@ class CLI():
         self.print('goodbye.')
         self.controller.disconnect()
 
+    def redraw(self):
+        match self.state:
+            case CLIStates.NORMAL:
+                self.draw_header(prefix='Warehouse Bot v3 | ', body='TODO', tail='ping:100ms')
+            case CLIStates.SETTINGS | CLIStates.SET_MODE | CLIStates.SAVE_POS | CLIStates.GOTO_POS:
+                self.ping += 1
+                self.draw_header(prefix=self.menu[0], options=self.menu[1], tail=f'ping:{self.ping}ms')
 
     #
     # Header
     #
 
     # redraws the header
-    def draw_header(self):
-        str = ''
-        str += '\0337' # save cursor pos
-        str += '\033[H' # goto 0,0
-        str += self.header + '\n'
-        str += '\0338' # restore cursor pos
+    #def draw_header(self):
+    #    str = ''
+    #    str += '\0337' # save cursor pos
+    #    str += '\033[H' # goto 0,0
+    #    str += self.header + '\n'
+    #    str += '\0338' # restore cursor pos
+    #    self.print(str, end='')
+
+    def draw_header(self, prefix=None, body=None, options=None, tail=None):
+        
+        body_len = 0
+        if self.state in [CLIStates.SETTINGS, CLIStates.SET_MODE, CLIStates.SAVE_POS, CLIStates.GOTO_POS]:
+            items = [f' {x} ' for x in self.menu[1]]
+            body_len = sum([len(x) for x in items])
+            items[self.menu_index] = f'\033[40;37m{items[self.menu_index]}\033[30;47m'
+            body = ''.join(items)
+        else:
+            body_len = len(body)
+
+        spacer = ' ' * (self.size[0] - len(prefix) - body_len - len(tail))
+
+        str = ''.join([
+            '\0337',
+            '\033[H',
+            '\033[30;47m',
+            prefix,
+            body,
+            spacer,
+            tail,
+            '\n',
+            '\033[0m',
+            '\0338'
+        ])
         self.print(str, end='')
-
-    # sets the header with padding and full length background
-    def set_header(self, header, color=None, prefix='Warehouse Bot v3 | '):
-        # set color if provided
-        if color is not None:
-            self.header_color = color
-        # update header
-        header = prefix + header
-        self.header = f'\033[1;{self.header_color[0]};{self.header_color[1]}m '
-        self.header += header
-        self.header += ' ' * (self.size[0] - len(header) - 1)
-        self.header += '\033[0m'
-
-    def update_option_header(self):
-        header = 'Make a section: '
-        for i in range(0, len(self.menu_items)):
-            if i == self.menu_selection:
-                header += f'\033[{self.header_color[0]+10};{self.header_color[1]-10}m'
-                header += ' ' + self.menu_items[i] + ' '
-                header += f'\033[{self.header_color[0]};{self.header_color[1]}m'
-            else:
-                header += ' ' + self.menu_items[i] + ' '
-
-        self.set_header(header, prefix = '')
-        self.draw_header()
 
     #
     # Printing
@@ -205,8 +247,51 @@ class CLI():
     #
 
     def update_selection(self, d):
-        self.menu_selection = (self.menu_selection + d) % len(self.menu_items)
-        self.update_option_header()
+        self.menu_index = (self.menu_index + d) % len(self.menu[1])
+        self.redraw()
+
+    def handle_selection(self):
+        match self.state:
+            case CLIStates.SETTINGS:
+                print('settings')
+                match self.menu[1][self.menu_index]:
+                    case 'set mode':
+                        self.state = CLIStates.SET_MODE
+                        self.menu = self.MODES_MENU
+                        self.menu_index = 0
+                    case 'save position':
+                        self.state = CLIStates.SAVE_POS
+                        self.menu = self.POSITIONS_MENU
+                        self.menu_index = 0
+                    case 'goto position':
+                        self.state = CLIStates.GOTO_POS
+                        self.menu = self.POSITIONS_MENU
+                        self.menu_index = 0
+
+            case CLIStates.SET_MODE:
+                print('set mode')
+                self.state = CLIStates.SETTINGS
+                self.menu = self.SETTINGS_MENU
+                self.menu_index = 0
+            
+            case CLIStates.SAVE_POS:
+                print('save position')
+                self.state = CLIStates.SETTINGS
+                self.menu = self.SETTINGS_MENU
+                self.menu_index = 0
+
+            case CLIStates.GOTO_POS:
+                print('goto position')
+                self.state = CLIStates.SETTINGS
+                self.menu = self.SETTINGS_MENU
+                self.menu_index = 0
+
+            case _:
+                self.state = CLIStates.SETTINGS
+                self.menu = self.SETTINGS_MENU
+                self.menu_index = 0
+        
+        self.redraw()
 
     #
     # Controller
@@ -220,8 +305,10 @@ class CLI():
                 case 6:
                     self.update_selection(-1)
 
-        self.prev_controller_state = state
+        if state.cross & (state.cross ^ self.prev_controller_state.cross):
+            self.handle_selection()
 
+        self.prev_controller_state = state
 
     #
     # Commands
@@ -265,12 +352,12 @@ class CLI():
 
     def connect(self, args):
         self.print('Connecting...')
-        self.set_header('Connected', color=self.IDLE_COLOR)
+        #self.set_header('Connected', color=self.IDLE_COLOR)
         self.print('Connected.')
 
     def disconnect(self, args):
         self.print('Disconnected.')
-        self.set_header('Disconnected', color=self.DISCONNECTED_COLOR)
+        #self.set_header('Disconnected', color=self.DISCONNECTED_COLOR)
 
     def ds4(self, args):
         connect = True
