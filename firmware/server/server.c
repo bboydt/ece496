@@ -2,20 +2,24 @@
 
 #include "rt_extra.h"
 #include <rt/task.h>
+#include <rt/mutex.h>
+
+// use this to avoid sending a packet while another packet is being received
+RT_MUTEX(esp_transmission_mutex);
 
 static uint8_t esp_getc(int *state, int *data_len);
 static int recv(struct packet *pck);
 static void send(const struct packet *pck);
 
 // create a task for this function
-void server_run(int (*callback)(const struct packet *req_pck, struct packet *res_pck))
+void server_run(void)
 {
     struct packet req_pck, res_pck;
     for (;;)
     {
         if (recv(&req_pck))
         {
-            if (callback(&req_pck, &res_pck))
+            if (handle_packet(&req_pck, &res_pck))
             {
                 send(&res_pck);
             }
@@ -23,6 +27,13 @@ void server_run(int (*callback)(const struct packet *req_pck, struct packet *res
 
         rt_task_yield();
     }
+}
+
+static uint8_t esp_uart_getc(void)
+{
+    while ((ESP_UART->CTRL & (1<<UART_CTRL_RX_NEMPTY)) == 0)
+        rt_task_yield();
+    return (uint8_t)(ESP_UART->DATA >> UART_DATA_RTX_LSB);
 }
 
 // esp8266 parsing states
@@ -44,19 +55,16 @@ static uint8_t esp_getc(int *state, int *data_len)
     uint8_t c;
     while (1)
     {
-        // block until byte received
-        while ((ESP_UART->CTRL & (1<<UART_CTRL_RX_NEMPTY)) == 0)
-            rt_task_yield();
-        c = (uint8_t)(ESP_UART->DATA >> UART_DATA_RTX_LSB);
-
         switch (*state)
         {
             case ESP_PARSING_STATE_READ_HEADER:
+                c = esp_uart_getc();
                 if (c == *header_cur)
                 {
                     header_cur++;
                     if (*header_cur == '\00')
                     {
+                        rt_mutex_lock(&esp_transmission_mutex);
                         *state = ESP_PARSING_STATE_READ_LEN;
                     }
                 }
@@ -67,6 +75,7 @@ static uint8_t esp_getc(int *state, int *data_len)
                 break;
 
             case ESP_PARSING_STATE_READ_LEN:
+                c = esp_uart_getc();
                 if (c < '0' || c > '9')
                 {
                     // FAULT
@@ -88,12 +97,14 @@ static uint8_t esp_getc(int *state, int *data_len)
                 if (*data_len > 0)
                 {
                     (*data_len)--;
+                    c = esp_uart_getc();
                     return c;
                 }
                 else
                 {
                     header_cur = header;
                     *state = ESP_PARSING_STATE_READ_HEADER;
+                    rt_mutex_unlock(&esp_transmission_mutex);
                 }
                 break;
         }
@@ -161,11 +172,13 @@ static int recv(struct packet *pck)
 // sends packet to esp
 static void send(const struct packet *pck)
 {
+    rt_mutex_lock(&esp_transmission_mutex);
     neorv32_uart_printf(ESP_UART, "AT+CIPSEND=%d\r\n", pck->len + 3);
     neorv32_uart_putc(ESP_UART, 'B');
     neorv32_uart_putc(ESP_UART, pck->pid);
     neorv32_uart_putc(ESP_UART, pck->len);
     for (int i = 0; i < pck->len; i++)
         neorv32_uart_putc(ESP_UART, pck->data[i]);
+    rt_mutex_unlock(&esp_transmission_mutex);
 }
 

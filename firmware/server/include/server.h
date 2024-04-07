@@ -25,6 +25,7 @@
 #define PARAM_DROP_X 0x08
 #define PARAM_DROP_Y 0x09
 #define PARAM_DROP_R 0x0A
+#define PARAM_LAST PARAM_DROP_R
 
 #define ESP_UART NEORV32_UART1
 
@@ -35,4 +36,7 @@ struct packet
     uint8_t data[0xFF];
 };
 
-void server_run(int (*callback)(const struct packet *req_pck, struct packet *res_pck));
+// if 1 is returned, the res_pck is sent to the client
+extern int handle_packet(const struct packet *req_pck, struct packet *res_pck);
+
+void server_run(void);

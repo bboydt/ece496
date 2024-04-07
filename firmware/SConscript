@@ -176,10 +176,11 @@ for app in apps:
     app_env = fw_env.Clone()
     app_libs = [libs[x] for x in apps[app]["libs"]]
     app_env.Replace(LIBS = app_libs)
+    lib_includes = [Dir(f"{x}/include").srcnode() for x in apps[app]["libs"]]
     app_env.Append(
         LINKFLAGS = ld_flags,
         PROGEMITTER = ld_emitter,
-        CPPPATH = [app],
+        CPPPATH = [app] + lib_includes,
     )
     app_env.Append(LINKFLAGS = ["-march=rv32imac", "-mabi=ilp32"])
 
