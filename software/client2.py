@@ -13,6 +13,13 @@ from dataclasses import dataclass
 
 PORT = 42069
 
+PID_HEARTBEAT = 0x00
+PID_STATUS = 0x01
+PID_SET_PARAM = 0x02
+PID_CONTROLLER = 0x03
+PID_LOG_MESSAGE = 0x04
+
+
 class CarConnection():
 
     def __init__(self, address):
@@ -33,6 +40,10 @@ class ControllerState():
     circle: bool
     cross: bool
     square: bool
+    left_x: int
+    left_y: int
+    right_x: int
+    right_y: int
 
 class Controller():
 
@@ -86,7 +97,11 @@ class Controller():
                 circle = (packet[5] & (1<<6)) != 0
                 cross = (packet[5] & (1<<5)) != 0
                 square = (packet[5] & (1<<4)) != 0
-                self.callback(ControllerState(packet, dpad, triangle, circle, cross, square))
+                left_x = packet[1]
+                left_y = packet[2]
+                right_x = packet[3]
+                right_y = packet[4]
+                self.callback(ControllerState(packet, dpad, triangle, circle, cross, square, left_x, left_y, right_x, right_y))
         # when the loop is done, disconnect
         self.controller.close()
 
@@ -133,7 +148,7 @@ class CLI():
 
         # controller
         self.controller = Controller(self, self.handle_controller)
-        self.prev_controller_state = ControllerState([], 0, False, False, False, False)
+        self.prev_controller_state = ControllerState([], 0, False, False, False, False, 0, 0, 0, 0)
 
         self.menu_items = ['set mode', '', 'option c']
         self.menu_selection = 0
@@ -151,6 +166,11 @@ class CLI():
 
     # runs main loop
     def run(self):
+        self.sock = Socket(AF_INET, SOCK_DGRAM)
+        self.address = ("10.121.1.251", 42069)
+        self.packet_thread = Thread(target=CLI.receive_packets, args=(self,))
+        self.packet_thread.start()
+
         # clear screen and go to second line
         self.print('\033[2J\033[1;0H')
         # print motd
@@ -188,15 +208,6 @@ class CLI():
     #
     # Header
     #
-
-    # redraws the header
-    #def draw_header(self):
-    #    str = ''
-    #    str += '\0337' # save cursor pos
-    #    str += '\033[H' # goto 0,0
-    #    str += self.header + '\n'
-    #    str += '\0338' # restore cursor pos
-    #    self.print(str, end='')
 
     def draw_header(self, prefix=None, body=None, options=None, tail=None):
         
@@ -310,6 +321,10 @@ class CLI():
 
         self.prev_controller_state = state
 
+        data_ints = [state.left_x, state.left_y, state.right_x, state.right_y]
+        data = b''.join([x.to_bytes(1) for x in data_ints])
+        self.send_packet(PID_CONTROLLER, data)
+
     #
     # Commands
     #
@@ -322,6 +337,7 @@ class CLI():
             'connect': 'Attempts to connect to the car.',
             'disconnect': 'Closes connection to the car.',
             'ds4': 'Connects/disconnects to ds4 controller. Usage: ds4 [-d]',
+            'heartbeat': 'Sends heartbeat packet to car.'
         }
 
         self.commands = {}
@@ -372,8 +388,28 @@ class CLI():
             self.controller.disconnect()
             self.print('Controller disconnected.')
 
+    def heartbeat(self, args):
+        self.send_packet(PID_HEARTBEAT, (48).to_bytes(1))
+
+    #
+    # Packets
+    #
+
+    def receive_packets(self):
+
+        while True:
+            inbound = self.sock.recv(258);
+            print(inbound)
+
+
+
+
+    def send_packet(self, pid: int, data: bytes):
+        packet = b''.join([b'B', pid.to_bytes(1), len(data).to_bytes(1), data])
+        self.sock.sendto(packet, self.address)
 
 if __name__ == '__main__':
     cli = CLI()
     cli.run()
+
 
