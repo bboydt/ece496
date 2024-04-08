@@ -63,7 +63,7 @@ begin
         
         MEM_INT_IMEM_EN => false,
         MEM_INT_DMEM_EN => true,
-        MEM_INT_DMEM_SIZE => 32768,
+        MEM_INT_DMEM_SIZE => 65536,
         
         XBUS_EN => true,
 

@@ -94,11 +94,36 @@ int handle_packet(const struct packet *req_pck, struct packet *res_pck)
             res_pck->data[1] = set_param(req_pck->data[1], req_pck->data[2]);
             return 1;
         case PID_CONTROLLER:
-            // TODO
+            {
+                int32_t x0 = req_pck->data[0] - 128;
+                int32_t y0 = req_pck->data[1] - 128;
+                int32_t x1 = (req_pck->data[2] - 128)/2;
+                //int32_t y1 = req_pck->data[3] - 128;
+                
+                if (abs(x1) <= 10) x1 = 0;
+                if (abs(x0) > abs(y0))
+                {
+                    // sideways
+                    if (abs(x0) <= 10) x0 = 0;
+                    car.motors.con_speeds[0] = -x0 - x1;
+                    car.motors.con_speeds[1] =  x0 - x1;
+                    car.motors.con_speeds[2] = -x0 + x1;
+                    car.motors.con_speeds[3] =  x0 + x1;
+                }
+                else
+                {
+                    // stright
+                    if (abs(y0) <= 10) y0 = 0;
+                    car.motors.con_speeds[0] = -y0 - x1;
+                    car.motors.con_speeds[1] = -y0 - x1;
+                    car.motors.con_speeds[2] = -y0 + x1;
+                    car.motors.con_speeds[3] = -y0 + x1;
+                }
+            }
             return 0;
         default:
             return 0;
     }
 }
 
-RT_TASK(server_run, 8<<10, RT_TASK_PRIORITY_MAX);
+RT_TASK(server_run, 8<<10, 0);

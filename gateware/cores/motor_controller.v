@@ -12,17 +12,37 @@ module motor (
     `WISHBONE_SLAVE(wb)
 );
     // encoder
-    wire a;
-    wire b;
+    reg a;
+    reg b;
     reg prev_a;
-    debounce #(.DEPTH(48)) debounce_a (.clk(sys_clk), .in(enc[0]), .out(a));
-    debounce #(.DEPTH(48)) debounce_b (.clk(sys_clk), .in(enc[1]), .out(b));
+    reg [31:0] tmp_pos;
+    reg [47:0] a_samples;
+    reg [47:0] b_samples;
+
     always @(posedge sys_clk) begin
         // rising edge
         if ((a ^ prev_a) & a) begin
-            pos <= (b) ? (pos + 1) : (pos - 1);
+            tmp_pos <= (b) ? (tmp_pos + 1) : (tmp_pos - 1);
         end
         prev_a <= a;
+        pos <= (~sys_rst) ? tmp_pos : 32'd0;
+
+        a_samples <= {a_samples[46:0], enc[0]};
+        b_samples <= {b_samples[46:0], enc[1]};
+
+        if (a_samples == 48'h0) begin
+            a <= 1'b0;
+        end else if (a_samples == 48'hFFFFFFFFFF) begin
+            a <= 1'b1;
+        end
+
+        if (b_samples == 48'h0) begin
+            b <= 1'b0;
+        end else if (b_samples == 48'hFFFFFFFFFF) begin
+            b <= 1'b1;
+        end
+
+
     end
 
     // pwm

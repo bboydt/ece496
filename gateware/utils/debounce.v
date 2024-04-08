@@ -11,14 +11,14 @@ module debounce #(
 
     always @(posedge clk) begin
         // push into buffer
-        buffer <= {buffer[1+:DEPTH-1], in};
+        buffer <= {buffer[DEPTH-1:1], in};
         
         // only change out if the buffer contins all 1s or 0s
-        if (buffer == {DEPTH{1'd1}}) begin
-            out <= 1'b1;
-        end else if (buffer == {DEPTH{1'd0}}) begin
+        if (buffer == (DEPTH)'d0) begin
             out <= 1'b0;
-        end
+        end else if (buffer == {DEPTH{1'b1}}) begin
+            out <= 1'b1;
+        end;
     end
 
 endmodule

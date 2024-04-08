@@ -27,6 +27,21 @@ static void control_motors(void)
     int32_t diff;
     uint32_t motor_state;
 
+    for (int i = 0; i < SOC_MOTOR_COUNT; i++)
+    {
+        car.motors.positions[i] = 0;
+        car.motors.current_speeds[i] = 0;
+        car.motors.target_speeds[i] = 0;
+
+        car.motors.con_speeds[i] = 0;
+        car.motors.imu_speeds[i] = 0;
+
+        for (int j = 0; j < MOTOR_SPEED_SAMPLES; j++)
+        {
+            car.motors.speed_samples[i][j] = 0;
+        }
+    }
+
     // set state to ready and wait for other systems to come online
     do
     {
@@ -45,32 +60,37 @@ static void control_motors(void)
             // the "average" here isn't a true average
             // it is just a sum of samples without normalization
 
+
             position = SOC_MOTORS->positions[i];
             // remove previous sample from average
-            car.motors.current_speeds[i] -= car.motors.speed_samples[sample_index];
+            car.motors.current_speeds[i] -= car.motors.speed_samples[i][sample_index];
             // calculate speed
-            car.motors.speed_samples[sample_index] = (position - car.motors.positions[i]);
+            car.motors.speed_samples[i][sample_index] = (position - car.motors.positions[i]);
             // add new sample to average
-            car.motors.current_speeds[i] += car.motors.speed_samples[sample_index];
+            car.motors.current_speeds[i] += car.motors.speed_samples[i][sample_index];
             // store position
             car.motors.positions[i] = position;
+
+            
         }
         sample_index = (sample_index + 1) % MOTOR_SPEED_SAMPLES;
-
 
         // run control loops
         for (int i = 0; i < SOC_MOTOR_COUNT; i++)
         {
+            car.motors.target_speeds[i] = car.motors.con_speeds[i] + car.motors.imu_speeds[i];
+
             error = abs(car.motors.target_speeds[i]) - abs(car.motors.current_speeds[i]);
             diff = error - car.motors.errors[i];
             car.motors.errors[i] = error;
 
+
             // get current motor pwm, the rest will be regenerated
             motor_state = SOC_MOTORS->motors[i] & 0xFF;
             // determine next duty cycle (do not modify motor_state before doing this)
-            motor_state |= clamp(motor_state + error/KP + diff/KD, 0x00, 0xFF);
+            motor_state = clamp(motor_state + error/KP + diff/KD, 0x00, 0xFF);
             // only run motor if target speed magnitude > 10
-            motor_state |= abs((car.motors.target_speeds[i]) > 10) << 31;
+            motor_state |= (abs(car.motors.target_speeds[i]) > 0) << 31;
             // determine direction motor should run
             motor_state |= (car.motors.target_speeds[i] > 0) << 30;
             SOC_MOTORS->motors[i] = motor_state;
@@ -81,5 +101,6 @@ static void control_motors(void)
         rt_task_sleep_periodic(&tick, CONTROL_MOTOR_TASK_PERIOD);
     }
 }
-RT_TASK(control_motors, RT_STACK_MIN, RT_TASK_PRIORITY_MIN);
+
+RT_TASK(control_motors, RT_STACK_MIN, 0);
 

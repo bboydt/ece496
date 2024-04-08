@@ -8,7 +8,7 @@
     {
         "name": "RAM0",
         "origin": "0x80000000",
-        "length": "32768",
+        "length": "65536",
         "init": false
     }
 ]

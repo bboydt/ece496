@@ -33,19 +33,22 @@ struct global_state
 
     struct position
     {
-        uint8_t x;
-        uint8_t y;
-        uint8_t r;
+        int16_t x;
+        int16_t y;
+        int16_t r;
     } pos;
     
     struct motors_state
     {
         struct rt_rwlock rwlock;
         int32_t positions[SOC_MOTOR_COUNT];
-        int32_t speed_samples[MOTOR_SPEED_SAMPLES];
+        int32_t speed_samples[SOC_MOTOR_COUNT][MOTOR_SPEED_SAMPLES];
         int32_t current_speeds[SOC_MOTOR_COUNT];
         int32_t target_speeds[SOC_MOTOR_COUNT];
         int32_t errors[SOC_MOTOR_COUNT];
+
+        int32_t con_speeds[SOC_MOTOR_COUNT];
+        int32_t imu_speeds[SOC_MOTOR_COUNT];
     } motors;
 };
 
