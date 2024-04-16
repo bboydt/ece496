@@ -9,7 +9,6 @@ module motor (
     output reg [31:0] pos,
     input reg [7:0] pwm_cmp,
 
-    `WISHBONE_SLAVE(wb)
 );
     // encoder
     reg a;

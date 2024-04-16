@@ -1,1 +1,1 @@
-dfu-util -w --alt 0 --download build/gw/top/top.dfu --reset
+ecpprog -IB -t; ecpprog -IB -o 2M -pa build/gw/top/top_bootrom.bit

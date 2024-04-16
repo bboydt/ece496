@@ -1,1 +1,1 @@
-dfu-util -w --alt 1 --download build/fw/app/walleos/walleos.dfu --reset
+ecpprog -IB -t; ecpprog -IB -o 8M -pa build/fw/app/walleos/walleos.bin

@@ -8,10 +8,10 @@
 
 #include "car.h"
 
-#define KP 8
+#define KP 2
 #define KD 2
 
-static int32_t clamp(int32_t x, int32_t min, int32_t max)
+int32_t clamp(int32_t x, int32_t min, int32_t max)
 {
     return (x < min) ? min : ((x > max) ? max : x);
 }
@@ -34,7 +34,6 @@ static void control_motors(void)
         car.motors.target_speeds[i] = 0;
 
         car.motors.con_speeds[i] = 0;
-        car.motors.imu_speeds[i] = 0;
 
         for (int j = 0; j < MOTOR_SPEED_SAMPLES; j++)
         {
@@ -70,31 +69,31 @@ static void control_motors(void)
             car.motors.current_speeds[i] += car.motors.speed_samples[i][sample_index];
             // store position
             car.motors.positions[i] = position;
-
-            
         }
-        sample_index = (sample_index + 1) % MOTOR_SPEED_SAMPLES;
 
         // run control loops
         for (int i = 0; i < SOC_MOTOR_COUNT; i++)
         {
-            car.motors.target_speeds[i] = car.motors.con_speeds[i] + car.motors.imu_speeds[i];
+            car.motors.target_speeds[i] = car.motors.con_speeds[i]/4 + ((i <= 1) ? -car.motors.imu_speed : car.motors.imu_speed);
 
-            error = abs(car.motors.target_speeds[i]) - abs(car.motors.current_speeds[i]);
+            error = car.motors.target_speeds[i] - car.motors.current_speeds[i];
             diff = error - car.motors.errors[i];
             car.motors.errors[i] = error;
-
+            
+            car.motors.pwms[i] = clamp(car.motors.pwms[i] + error/KP + diff/KD, -255, 255);
 
             // get current motor pwm, the rest will be regenerated
             motor_state = SOC_MOTORS->motors[i] & 0xFF;
             // determine next duty cycle (do not modify motor_state before doing this)
-            motor_state = clamp(motor_state + error/KP + diff/KD, 0x00, 0xFF);
-            // only run motor if target speed magnitude > 10
-            motor_state |= (abs(car.motors.target_speeds[i]) > 0) << 31;
+            motor_state = abs(car.motors.pwms[i]);
+            // only run motor if target speed magnitude > 10. lol jk actually crank that soulja boy
+            motor_state |= 1 << 31;
             // determine direction motor should run
-            motor_state |= (car.motors.target_speeds[i] > 0) << 30;
+            motor_state |= (car.motors.pwms[i] > 0) << 30;
             SOC_MOTORS->motors[i] = motor_state;
         }
+
+        sample_index = (sample_index + 1) % MOTOR_SPEED_SAMPLES;
 
         //rt_rwlock_wrunlock(&car.motors.rwlock);
     
@@ -102,5 +101,5 @@ static void control_motors(void)
     }
 }
 
-RT_TASK(control_motors, RT_STACK_MIN, 0);
+RT_TASK(control_motors, 8<<10, 1);
 

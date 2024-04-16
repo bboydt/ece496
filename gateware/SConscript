@@ -17,7 +17,7 @@ gw_env = env.Clone(
         "--um5g-85k",
         "--speed=8", 
         "--package=CABGA381",
-        "--lpf=" + lpf_file.path
+        "--lpf=" + lpf_file.path,
     ],
     ECPPACKFLAGS = [
         "--compress",

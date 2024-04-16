@@ -34,25 +34,20 @@
 #define AXIS_MAP_CONFIG 0x41
 #define AXIS_MAP_SIGN 0x42
 
-#define IMU_TASK_PERIOD MS_TO_TICKS(1000/10)
+#define IMU_TASK_PERIOD MS_TO_TICKS(1000/20)
+
+#define MAX_DEG (16*360)
 
 #define MAX_SPEED 20
 #define DEG_DIV 4
 #define DEG_MUL (16/DEG_DIV)
-#define KP 80
-#define KD 8
-#define KI 128
+#define KP 1024
+#define KD 256
 
-static int32_t clamp(int32_t x, int32_t min, int32_t max)
-{
-    return (x < min) ? min : ((x > max) ? max : x);
-}
+extern int32_t clamp(int32_t x, int32_t min, int32_t max);
 
 static void imu(void)
 {
-    // give the IMU time to turn on
-    rt_task_sleep(MS_TO_TICKS(5000));
-
     // go into config mode
     i2c_write_u8(IMU_ADDR, OPR_MODE, 0x00);
     rt_task_sleep(MS_TO_TICKS(100));
@@ -63,37 +58,26 @@ static void imu(void)
     i2c_write_u8(IMU_ADDR, OPR_MODE, 0x08);
     rt_task_sleep(MS_TO_TICKS(1000));
 
-    int16_t angle, error, prev_error = 0, diff;
-    int32_t speed = 0;
+    int16_t angle, error;
     int16_t target = 0;
 
     uint32_t tick = 0;
     for (;;)
     {
-        angle = i2c_read_s16(IMU_ADDR, EUL_X)/DEG_DIV;
+        angle = i2c_read_s16(IMU_ADDR, EUL_X);
+
         error = target - angle;
-        if (error < -180*DEG_MUL)
-            error = error + 360*DEG_MUL;
-        else if (error > 180*DEG_MUL)
-            error = error - 360*DEG_MUL;
+        if (error < -MAX_DEG/2)
+            error = error + MAX_DEG;
+        else if (error > MAX_DEG/2)
+            error = error - MAX_DEG;
 
-
-        diff = error - prev_error;
-        prev_error = error;
-
-
-        speed += error/KP + diff/KD;
-        speed = clamp(speed, -MAX_SPEED, MAX_SPEED);
-
-        car.motors.imu_speeds[0] = -speed;
-        car.motors.imu_speeds[1] = -speed;
-        car.motors.imu_speeds[2] = speed;
-        car.motors.imu_speeds[3] = speed;
+        car.motors.imu_speed = error/20;
 
         rt_task_sleep_periodic(&tick, IMU_TASK_PERIOD);
     }
 }
 
-RT_TASK(imu, 32<<10, RT_TASK_PRIORITY_MIN);
+//RT_TASK(imu, 8<<10, 1);
 
 

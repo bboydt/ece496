@@ -134,10 +134,10 @@ apps = {
         "libs": []
     },
     
-    #"blinky": {
-    #    "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
-    #    "libs": [ libs["neorv32"], libs["start-rt"], libs["rt"], libs["rt-riscv"] ]
-    #},
+    "blinky": {
+        "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],
+        "libs": [ "neorv32", "start-rt", "rt", "rt-riscv" ]
+    },
    
     #"m1": {
     #    "ld_scripts": [ "shared/ld/memory.ld", "shared/ld/sections-app.ld" ],

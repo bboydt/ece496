@@ -3,6 +3,7 @@
 #include <rt/task.h>
 
 #include <soc/leds.h>
+#include <soc/servos.h>
 
 #include <server.h>
 
@@ -15,6 +16,9 @@ volatile struct global_state car;
 //
 // Initialization
 //
+
+#define SERVO_HOME 2200
+#define SERVO_PINCH 5200
 
 void mcu_init(void)
 {
@@ -31,7 +35,10 @@ void mcu_init(void)
     neorv32_twi_setup(CLK_PRSC_128, 1, 1);
 
     // State
-    car.systems = 0;
+    car.systems = CAR_SYSTEMS_READY;
+
+    SOC_SERVOS->servos[0] = SERVO_PINCH;
+    neorv32_gpio_pin_set(1);
 }
 
 //
@@ -69,6 +76,12 @@ static int set_param(uint8_t param, uint8_t value)
 // Packet Handling
 //
 
+#define BUTTON_CROSS    (1<<0)
+#define BUTTON_SQUARE   (1<<1)
+#define BUTTON_TRIANGLE (1<<2)
+#define BUTTON_CIRCLE   (1<<3)
+#define BUTTON_PRESSED(x) (((buttons & (x)) & ((buttons & (x)) ^ (prev_buttons & (x)))) != 0)
+
 int handle_packet(const struct packet *req_pck, struct packet *res_pck)
 {
     switch (req_pck->pid)
@@ -97,28 +110,54 @@ int handle_packet(const struct packet *req_pck, struct packet *res_pck)
             {
                 int32_t x0 = req_pck->data[0] - 128;
                 int32_t y0 = req_pck->data[1] - 128;
-                int32_t x1 = (req_pck->data[2] - 128)/2;
+                //int32_t x1 = (req_pck->data[2] - 128)/2;
                 //int32_t y1 = req_pck->data[3] - 128;
+                uint32_t buttons = (uint32_t)req_pck->data[4];
                 
-                if (abs(x1) <= 10) x1 = 0;
                 if (abs(x0) > abs(y0))
                 {
                     // sideways
                     if (abs(x0) <= 10) x0 = 0;
-                    car.motors.con_speeds[0] = -x0 - x1;
-                    car.motors.con_speeds[1] =  x0 - x1;
-                    car.motors.con_speeds[2] = -x0 + x1;
-                    car.motors.con_speeds[3] =  x0 + x1;
+                    car.motors.con_speeds[0] = -x0;
+                    car.motors.con_speeds[1] =  x0;
+                    car.motors.con_speeds[2] = -x0;
+                    car.motors.con_speeds[3] =  x0;
                 }
                 else
                 {
                     // stright
                     if (abs(y0) <= 10) y0 = 0;
-                    car.motors.con_speeds[0] = -y0 - x1;
-                    car.motors.con_speeds[1] = -y0 - x1;
-                    car.motors.con_speeds[2] = -y0 + x1;
-                    car.motors.con_speeds[3] = -y0 + x1;
+                    car.motors.con_speeds[0] = -y0;
+                    car.motors.con_speeds[1] = -y0;
+                    car.motors.con_speeds[2] = -y0;
+                    car.motors.con_speeds[3] = -y0;
                 }
+
+                static uint32_t prev_buttons = 0;
+                if (BUTTON_PRESSED(BUTTON_CROSS))
+                {
+                    SOC_LEDS->leds[5] = 0xFF0000;
+                    neorv32_gpio_pin_set(0);
+                }
+                else if (BUTTON_PRESSED(BUTTON_TRIANGLE))
+                {
+                    SOC_LEDS->leds[5] = 0x000000;
+                    neorv32_gpio_pin_clr(0);
+                }
+
+                if (BUTTON_PRESSED(BUTTON_SQUARE))
+                {
+                    SOC_LEDS->leds[4] = 0xFF0000;
+                    SOC_SERVOS->servos[0] = SERVO_HOME;
+                }
+                else if (BUTTON_PRESSED(BUTTON_CIRCLE))
+                {
+                    SOC_LEDS->leds[4] = 0x000000;
+                    SOC_SERVOS->servos[0] = SERVO_PINCH;
+                }
+
+
+                prev_buttons = buttons;
             }
             return 0;
         default:
@@ -126,4 +165,4 @@ int handle_packet(const struct packet *req_pck, struct packet *res_pck)
     }
 }
 
-RT_TASK(server_run, 8<<10, 0);
+RT_TASK(server_run, 8<<10, 1);

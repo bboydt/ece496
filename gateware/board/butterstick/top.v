@@ -30,7 +30,7 @@ module top (
     end
     assign led_clk = clk_divider[7];
     assign motor_pwm_clk = clk_divider[0];
-    assign servo_pwm_clk = clk_divider[3];
+    assign servo_pwm_clk = clk_divider[2];
 
     assign reset_n = user_buttons[0];
 
@@ -50,6 +50,9 @@ module top (
     assign syzygy0[17] = motor_dirs[2];
     assign syzygy0[15] = ~motor_dirs[1];
     assign syzygy0[13] = ~motor_dirs[0];
+
+    assign syzygy0[8] = gpio_out[1] & gpio_out[0];
+    assign syzygy0[10] = gpio_out[1] & ~gpio_out[0];
 
     // SoC
     soc soc0 (
@@ -71,12 +74,12 @@ module top (
         .spiflash_miso(spiflash_miso),
 
         // Motors
-        .motor_encs(syzygy0[27:20]),
+        .motor_encs({syzygy0[26], syzygy0[27], syzygy0[24], syzygy0[25], syzygy0[23], syzygy0[22], syzygy0[21], syzygy0[20]}),
         .motor_pwms({syzygy0[18], syzygy0[16], syzygy0[14], syzygy0[12]}),
         .motor_dirs(motor_dirs),
 
         // Servos
-        //.servo_pwms({syzygy0[0], syzygy0[1]}),
+        .servo_pwms(syzygy0[0]),
 
         // VCCIO
         .vccio_en(vccio_en),
@@ -96,14 +99,14 @@ module top (
         .gpio_out(gpio_out),
 
         // JTAG
-        .jtag_tck(1'b0),
-        .jtag_tdi(1'b0),
-        .jtag_tms(1'b0)
+    );
+        //.jtag_tck(1'b0),
+        //.jtag_tdi(1'b0),
+        //.jtag_tms(1'b0)
         //
         //.jtag_tck(syzygy0[2]),
         //.jtag_tdi(syzygy0[4]),
         //.jtag_tdo(syzygy0[6]),
         //.jtag_tms(syzygy0[8])
-    );
 
 endmodule

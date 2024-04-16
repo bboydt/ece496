@@ -33,6 +33,9 @@ struct global_state
 
     struct position
     {
+        int16_t target_x;
+        int16_t target_y;
+        int16_t target_r;
         int16_t x;
         int16_t y;
         int16_t r;
@@ -46,9 +49,10 @@ struct global_state
         int32_t current_speeds[SOC_MOTOR_COUNT];
         int32_t target_speeds[SOC_MOTOR_COUNT];
         int32_t errors[SOC_MOTOR_COUNT];
+        int32_t pwms[SOC_MOTOR_COUNT];
 
         int32_t con_speeds[SOC_MOTOR_COUNT];
-        int32_t imu_speeds[SOC_MOTOR_COUNT];
+        int32_t imu_speed;
     } motors;
 };
 

@@ -1,45 +1,31 @@
-module pwm_controller #(
-    parameter COUNT = 4
-) (
+module pwm_controller (
     input sys_clk,
     input sys_rst,
     input pwm_clk,
-    output [COUNT-1:0] pwms,
+    output reg pwm,
     `WISHBONE_SLAVE(wb)
 );
 
-    localparam ADDR_BITS = $clog2(COUNT);
+    reg [15:0] pwm_compare;
+    reg [15:0] pwm_counter;
+    always @(posedge pwm_clk) begin 
+        pwm_counter <= (pwm_counter == 16'hFFFE) ? (16'h0) : (pwm_counter + 1);
+        pwm <= (pwm_counter < pwm_compare);
+    end
 
-    // Registers
-
-    // | 31 - 16 | 15 -- 0 |
-    // | Maximum | Compare |
-    reg [15:0] vals [COUNT-1:0];
- 
-    // PWM Generation
-    genvar i;
-    generate
-        for (i = 0; i < COUNT; i++) begin
-            pwm #(
-                .WIDTH(16)
-            ) pwm (
-                .clk(pwm_clk),
-                .compare(vals[i][0*16+:16]),
-                .out(pwms[i])
-            );
-        end
-    endgenerate
-
-    // Wishbone Interface
     always @(posedge sys_clk) begin
         if (wb_cyc & wb_stb) begin
             if (~wb_ack & ~wb_err) begin
                 if (wb_we) begin
-                    vals[wb_adr[2+:ADDR_BITS]] <= wb_mosi;
+                    if (wb_adr[3:0] == 4'h0) begin
+                        pwm_compare <= wb_mosi[0+:16];
+                    end
                     wb_ack <= 1'b1;
                     wb_err <= 1'b0;
                 end else begin
-                    wb_miso <= vals[wb_adr[2+:ADDR_BITS]][0+:16];
+                    if (wb_adr[3:0] == 4'h0) begin
+                        wb_miso <= {16'h0, pwm_compare};
+                    end
                     wb_ack <= 1'b1;
                     wb_err <= 1'b0;
                 end
@@ -49,5 +35,7 @@ module pwm_controller #(
             wb_err <= 1'b0;
         end
     end
+    
 
 endmodule
+

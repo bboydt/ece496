@@ -10,7 +10,7 @@
 `define MOTORS0_MASK 32'h000000FF
 
 `define SERVOS0_ADDR 32'hF0000200
-`define SERVOS0_MASK 32'hF00000FF
+`define SERVOS0_MASK 32'h000000FF
 
 module soc (
 
@@ -37,7 +37,7 @@ module soc (
     output [3:0] motor_dirs,
 
     // Servos
-    output [1:0] servo_pwms,
+    output servo_pwms,
 
     // VCCIO
     output vccio_en,
@@ -93,11 +93,11 @@ module soc (
         .xip_mosi(spiflash_mosi),
         .xip_miso(spiflash_miso),
 
-        .jtag_trst(1'b1),
-        .jtag_tck(jtag_tck),
-        .jtag_tdi(jtag_tdi),
-        .jtag_tdo(jtag_tdo),
-        .jtag_tms(jtag_tms),
+        //.jtag_trst(1'b1),
+        //.jtag_tck(jtag_tck),
+        //.jtag_tdi(jtag_tdi),
+        //.jtag_tdo(jtag_tdo),
+        //.jtag_tms(jtag_tms),
 
         `WISHBONE_PORT(bus, cpu0)
     );
@@ -158,11 +158,11 @@ module soc (
 
     // Servos
     `WISHBONE_WIRES(servos0);
-    pwm_controller #(.COUNT(2)) servos0 (
+    pwm_controller servos0 (
         .sys_clk(sys_clk),
         .sys_rst(sys_rst),
         .pwm_clk(servo_pwm_clk),
-        .pwms(servo_pwms),
+        .pwm(servo_pwms),
         `WISHBONE_PORT(wb, servos0)
     );
 

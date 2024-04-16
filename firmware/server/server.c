@@ -186,7 +186,7 @@ static int recv(struct packet *pck)
 }
 
 // sends packet to esp
-static void send(const struct packet *pck)
+void send(const struct packet *pck)
 {
     SOC_LEDS->leds[0] = 0xFFFF00;
     neorv32_uart_printf(ESP_UART, "AT+CIPSEND=%d\r\n", pck->len + 3);

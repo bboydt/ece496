@@ -4,10 +4,11 @@
 
 #define SOC_SERVOS_BASE 0xF0000200UL
 
-struct motor_regs
+__attribute__ ((packed, aligned(4)))
+struct servo_regs
 {
     uint32_t servos[2];
 };
 
-#define SOC_SERVOS ((volatile struct motor_regs*)SOC_SERVOS_BASE)
+#define SOC_SERVOS ((volatile struct servo_regs*)SOC_SERVOS_BASE)
 

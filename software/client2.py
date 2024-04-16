@@ -309,19 +309,25 @@ class CLI():
     #
 
     def handle_controller(self, state):
-        if state.dpad != self.prev_controller_state.dpad:
-            match state.dpad:
-                case 2:
-                    self.update_selection(+1)
-                case 6:
-                    self.update_selection(-1)
+        #if state.dpad != self.prev_controller_state.dpad:
+        #    match state.dpad:
+        #        case 2:
+        #            self.update_selection(+1)
+        #        case 6:
+        #            self.update_selection(-1)
 
-        if state.cross & (state.cross ^ self.prev_controller_state.cross):
-            self.handle_selection()
+        #if state.cross & (state.cross ^ self.prev_controller_state.cross):
+        #    self.handle_selection()
 
         self.prev_controller_state = state
 
-        data_ints = [state.left_x, state.left_y, state.right_x, state.right_y]
+        buttons = 0
+        buttons |= ((1<<0) if state.cross    else 0)
+        buttons |= ((1<<1) if state.square   else 0)
+        buttons |= ((1<<2) if state.triangle else 0)
+        buttons |= ((1<<3) if state.circle   else 0)
+
+        data_ints = [state.left_x, state.left_y, state.right_x, state.right_y, buttons]
         data = b''.join([x.to_bytes(1) for x in data_ints])
         self.send_packet(PID_CONTROLLER, data)
 
