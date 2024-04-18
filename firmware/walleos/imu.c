@@ -59,20 +59,20 @@ static void imu(void)
     rt_task_sleep(MS_TO_TICKS(1000));
 
     int16_t angle, error;
-    int16_t target = 0;
 
     uint32_t tick = 0;
     for (;;)
     {
         angle = i2c_read_s16(IMU_ADDR, EUL_X);
 
-        error = target - angle;
+        error = car.pos.r - angle;
         if (error < -MAX_DEG/2)
             error = error + MAX_DEG;
         else if (error > MAX_DEG/2)
             error = error - MAX_DEG;
 
-        car.motors.imu_speed = error/20;
+        car.motors.imu_speed = (int16_t)clamp(error/16, -20, 20);
+        
 
         rt_task_sleep_periodic(&tick, IMU_TASK_PERIOD);
     }

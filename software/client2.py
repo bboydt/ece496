@@ -44,6 +44,8 @@ class ControllerState():
     left_y: int
     right_x: int
     right_y: int
+    l1: bool
+    r1: bool
 
 class Controller():
 
@@ -101,7 +103,9 @@ class Controller():
                 left_y = packet[2]
                 right_x = packet[3]
                 right_y = packet[4]
-                self.callback(ControllerState(packet, dpad, triangle, circle, cross, square, left_x, left_y, right_x, right_y))
+                l1 = (packet[6] & (1<<0)) != 0;
+                r1 = (packet[6] & (1<<1)) != 0;
+                self.callback(ControllerState(packet, dpad, triangle, circle, cross, square, left_x, left_y, right_x, right_y, l1, r1))
         # when the loop is done, disconnect
         self.controller.close()
 
@@ -148,7 +152,7 @@ class CLI():
 
         # controller
         self.controller = Controller(self, self.handle_controller)
-        self.prev_controller_state = ControllerState([], 0, False, False, False, False, 0, 0, 0, 0)
+        self.prev_controller_state = ControllerState([], 0, False, False, False, False, 0, 0, 0, 0, 0, 0)
 
         self.menu_items = ['set mode', '', 'option c']
         self.menu_selection = 0
@@ -326,6 +330,8 @@ class CLI():
         buttons |= ((1<<1) if state.square   else 0)
         buttons |= ((1<<2) if state.triangle else 0)
         buttons |= ((1<<3) if state.circle   else 0)
+        buttons |= ((1<<4) if state.l1 else 0)
+        buttons |= ((1<<5) if state.r1 else 0)
 
         data_ints = [state.left_x, state.left_y, state.right_x, state.right_y, buttons]
         data = b''.join([x.to_bytes(1) for x in data_ints])

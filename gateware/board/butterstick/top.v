@@ -51,8 +51,8 @@ module top (
     assign syzygy0[15] = ~motor_dirs[1];
     assign syzygy0[13] = ~motor_dirs[0];
 
-    assign syzygy0[8] = gpio_out[1] & gpio_out[0];
-    assign syzygy0[10] = gpio_out[1] & ~gpio_out[0];
+    assign syzygy0[8] = gpio_out[1] & ~gpio_out[0];
+    assign syzygy0[10] = gpio_out[1] & gpio_out[0];
 
     // SoC
     soc soc0 (

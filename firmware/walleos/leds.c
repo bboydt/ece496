@@ -44,4 +44,4 @@ static void heartbeat(void)
     }
 }
 
-RT_TASK(heartbeat, RT_STACK_MIN, 1);
+RT_TASK(heartbeat, RT_STACK_MIN, 3);

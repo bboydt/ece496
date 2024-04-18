@@ -37,7 +37,7 @@ void mcu_init(void)
     // State
     car.systems = CAR_SYSTEMS_READY;
 
-    SOC_SERVOS->servos[0] = SERVO_PINCH;
+    SOC_SERVOS->servos[0] = SERVO_HOME;
     neorv32_gpio_pin_set(1);
 }
 
@@ -80,6 +80,8 @@ static int set_param(uint8_t param, uint8_t value)
 #define BUTTON_SQUARE   (1<<1)
 #define BUTTON_TRIANGLE (1<<2)
 #define BUTTON_CIRCLE   (1<<3)
+#define BUTTON_L1       (1<<4)
+#define BUTTON_R1       (1<<5)
 #define BUTTON_PRESSED(x) (((buttons & (x)) & ((buttons & (x)) ^ (prev_buttons & (x)))) != 0)
 
 int handle_packet(const struct packet *req_pck, struct packet *res_pck)
@@ -110,27 +112,29 @@ int handle_packet(const struct packet *req_pck, struct packet *res_pck)
             {
                 int32_t x0 = req_pck->data[0] - 128;
                 int32_t y0 = req_pck->data[1] - 128;
-                //int32_t x1 = (req_pck->data[2] - 128)/2;
+                int32_t x1 = (req_pck->data[2] - 128)/2;
                 //int32_t y1 = req_pck->data[3] - 128;
                 uint32_t buttons = (uint32_t)req_pck->data[4];
                 
+                if (abs(x1) < 10) x1 = 0;
+
                 if (abs(x0) > abs(y0))
                 {
                     // sideways
                     if (abs(x0) <= 10) x0 = 0;
-                    car.motors.con_speeds[0] = -x0;
-                    car.motors.con_speeds[1] =  x0;
-                    car.motors.con_speeds[2] = -x0;
-                    car.motors.con_speeds[3] =  x0;
+                    car.motors.con_speeds[0] = -x0 + x1;
+                    car.motors.con_speeds[1] =  x0 + x1;
+                    car.motors.con_speeds[2] = -x0 - x1;
+                    car.motors.con_speeds[3] =  x0 - x1;
                 }
                 else
                 {
                     // stright
                     if (abs(y0) <= 10) y0 = 0;
-                    car.motors.con_speeds[0] = -y0;
-                    car.motors.con_speeds[1] = -y0;
-                    car.motors.con_speeds[2] = -y0;
-                    car.motors.con_speeds[3] = -y0;
+                    car.motors.con_speeds[0] = -y0 + x1;
+                    car.motors.con_speeds[1] = -y0 + x1;
+                    car.motors.con_speeds[2] = -y0 - x1;
+                    car.motors.con_speeds[3] = -y0 - x1;
                 }
 
                 static uint32_t prev_buttons = 0;
@@ -156,6 +160,20 @@ int handle_packet(const struct packet *req_pck, struct packet *res_pck)
                     SOC_SERVOS->servos[0] = SERVO_PINCH;
                 }
 
+                if (BUTTON_PRESSED(BUTTON_L1))
+                {
+                    car.pos.r += 16*360/4;
+                }
+                if (BUTTON_PRESSED(BUTTON_R1))
+                {
+                    car.pos.r -= 16*360/4;
+                }
+
+                if (car.pos.r < 0)
+                    car.pos.r += 16*360;
+                else if (car.pos.r > 16*360)
+                    car.pos.r -= 16*360;
+
 
                 prev_buttons = buttons;
             }
@@ -165,4 +183,4 @@ int handle_packet(const struct packet *req_pck, struct packet *res_pck)
     }
 }
 
-RT_TASK(server_run, 8<<10, 1);
+RT_TASK(server_run, 8<<10, 2);
