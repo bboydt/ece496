@@ -1,3 +1,0 @@
-(sym_lib_table
-  (lib (name "SYZYGY")(type "Legacy")(uri "${KIPRJMOD}/../../deps/syzygy/KiCAD/lib/SYZYGY.lib")(options "")(descr ""))
-)
